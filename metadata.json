@@ -1,0 +1,6 @@
+{
+  "name": "NEXLIVE",
+  "description": "All-in-One Global AI Study Computer — Smart Study Folders, Exam Panic Mode, Ultra-Block Focus Timer, and Silent Live-Cam Group Hub.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
