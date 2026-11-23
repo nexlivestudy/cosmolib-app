@@ -1,6 +1,6 @@
 import type { BYOKConfig, GeneratedSubfolders, MasterRescuePack, WrittenGradeResult } from '../types';
 
-const BYOK_STORAGE_KEY = 'nexlive_byok_config';
+const BYOK_STORAGE_KEY = 'cosmolib_byok_config';
 
 export function loadBYOKConfig(): BYOKConfig {
   try {
