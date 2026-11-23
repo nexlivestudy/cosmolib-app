@@ -188,7 +188,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 dark:bg-[#0B0F19] dark:text-slate-100">
       <header className="mx-auto flex max-w-4xl items-center justify-between gap-6 px-6 py-5">
         <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-          NEXLIVE
+          COSMOLIB
         </span>
         <div className="flex items-center gap-4">
           <span className="font-mono text-xs tabular-nums text-slate-500 dark:text-slate-400">
@@ -295,7 +295,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 How many hours of practice are you locking in today?
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                NEXLIVE calibrates your focus blocks, break cycles, and daily streak goal around this target.
+                COSMOLIB calibrates your focus blocks, break cycles, and daily streak goal around this target.
               </p>
 
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -331,7 +331,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 Are you ready to cook your night?
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                Choose your primary focus rhythm so NEXLIVE surfaces matching live-cam peers and themes.
+                Choose your primary focus rhythm so COSMOLIB surfaces matching live-cam peers and themes.
               </p>
 
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -652,7 +652,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 onClick={handleFinish}
                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
               >
-                Launch NEXLIVE Workspace
+                Launch COSMOLIB Workspace
                 <ArrowRight className="h-4 w-4" />
               </button>
             )}

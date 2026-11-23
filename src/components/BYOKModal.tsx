@@ -12,15 +12,15 @@ interface BYOKModalProps {
 const PROVIDERS: { id: BYOKProvider; label: string; subtitle: string; defaultModel: string }[] = [
   {
     id: 'default',
-    label: 'NEXLIVE Built-in Engine',
-    subtitle: 'Zero-config server-side Gemini 2.5 Flash (recommended)',
-    defaultModel: 'gemini-2.5-flash',
+    label: 'COSMOLIB Built-in Engine',
+    subtitle: 'Zero-config server-side Gemini 3.8 Flash (recommended)',
+    defaultModel: 'gemini-3.8-flash',
   },
   {
     id: 'gemini',
     label: 'Google AI Studio (BYOK)',
     subtitle: 'Use your own personal Google AI Studio key for unlimited usage',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-3.8-flash',
   },
   {
     id: 'groq',
@@ -32,7 +32,7 @@ const PROVIDERS: { id: BYOKProvider; label: string; subtitle: string; defaultMod
     id: 'openrouter',
     label: 'OpenRouter (BYOK)',
     subtitle: 'Route to any OpenRouter free or custom study model',
-    defaultModel: 'google/gemini-2.5-flash',
+    defaultModel: 'google/gemini-3.8-flash',
   },
 ];
 
@@ -67,7 +67,7 @@ export const BYOKModal: React.FC<BYOKModalProps> = ({ open, config, onSave, onCl
               Student Free Pass (BYOK)
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              NEXLIVE runs on the built-in server AI engine by default. Optionally plug in your own free personal key for unlimited usage.
+              COSMOLIB runs on the built-in server AI engine by default. Optionally plug in your own free personal key for unlimited usage.
             </p>
           </div>
           <button

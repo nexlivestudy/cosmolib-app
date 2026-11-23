@@ -229,7 +229,7 @@ export function downloadScannedImagesAsPdf(imageDataUrls: string[], fileName: st
     if (idx > 0) doc.addPage();
     doc.setFontSize(9);
     doc.setTextColor(100);
-    doc.text(`NEXLIVE Scanned Answer Sheet · Page ${idx + 1}`, margin, 8);
+    doc.text(`COSMOLIB Scanned Answer Sheet · Page ${idx + 1}`, margin, 8);
     doc.addImage(
       dataUrl,
       'JPEG',
@@ -273,7 +273,7 @@ export function downloadEasyConceptPdf(
     y += 3;
   };
 
-  writeWrapped('NEXLIVE · EASY CONCEPT SHEET', 9, true, [8, 145, 178]);
+  writeWrapped('COSMOLIB · EASY CONCEPT SHEET', 9, true, [8, 145, 178]);
   writeWrapped(concept.title, 18, true, [15, 23, 42]);
   writeWrapped(`Folder: ${folderName}`, 10, false, [100, 116, 139]);
   y += 2;
@@ -291,7 +291,7 @@ export function downloadEasyConceptPdf(
   writeWrapped(concept.keyTakeaway, 10.5, true);
 
   const safeSlug = concept.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-  doc.save(`nexlive-concept-${safeSlug || 'sheet'}.pdf`);
+  doc.save(`cosmolib-concept-${safeSlug || 'sheet'}.pdf`);
 }
 
 /**
@@ -328,7 +328,7 @@ export function downloadMasterRescuePdf(pack: MasterRescuePack): void {
     y += 2;
   };
 
-  writeBlock('NEXLIVE · MASTER RESCUE PDF', 9, true, [8, 145, 178]);
+  writeBlock('COSMOLIB · MASTER RESCUE PDF', 9, true, [8, 145, 178]);
   writeBlock(`${pack.subject} (${pack.totalMarks} Marks)`, 19, true, [15, 23, 42]);
   writeBlock(`Generated: ${new Date(pack.createdAt).toLocaleString()}`, 9.5, false, [100, 116, 139]);
   y += 2;
@@ -360,5 +360,5 @@ export function downloadMasterRescuePdf(pack: MasterRescuePack): void {
   });
 
   const slug = pack.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-  doc.save(`nexlive-master-rescue-${slug || 'exam'}.pdf`);
+  doc.save(`cosmolib-master-rescue-${slug || 'exam'}.pdf`);
 }

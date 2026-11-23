@@ -15,7 +15,6 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { SAMPLE_RESCUE_PACK } from '../data/catalog';
 import { generateExamPanicPack, gradeWrittenAnswer } from '../lib/aiClient';
 import type { BYOKConfig, HighYieldTopic, MasterRescuePack, WrittenGradeResult } from '../types';
 import {
@@ -92,7 +91,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
 
   const totalMarks = deriveTotalMarksNumber(totalMarksInput);
 
-  const [pack, setPack] = useState<MasterRescuePack>(SAMPLE_RESCUE_PACK);
+  const [pack, setPack] = useState<MasterRescuePack | null>(null);
   const [viewMode, setViewMode] = useState<'reader' | 'mcq' | 'written'>('reader');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -295,8 +294,8 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
   }, [uploadedFiles, subject]);
 
   const mcqScore = useMemo(
-    () => scoreMcqAttempt(mcqAnswers, pack.mcqQuestions),
-    [mcqAnswers, pack.mcqQuestions]
+    () => scoreMcqAttempt(mcqAnswers, pack?.mcqQuestions ?? []),
+    [mcqAnswers, pack?.mcqQuestions]
   );
 
   const composeAiFieldPayload = (field: PanicInputField, manualText: string): string => {
@@ -384,6 +383,10 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
   };
 
   const handleGradeWritten = async () => {
+    if (!pack) {
+      setError('Generate a Master Rescue Pack first before grading written solutions.');
+      return;
+    }
     if (scannedPages.length === 0) {
       setError('Upload at least one scanned photo of your handwritten solution first.');
       return;
@@ -635,9 +638,15 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
           })}
 
           <div className="flex flex-wrap items-center justify-between gap-3 lg:col-span-12">
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              Active pack below: <strong className="text-slate-900 dark:text-white">{pack.subject}</strong> ({pack.totalMarks} marks)
-            </span>
+            {pack ? (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Active pack below: <strong className="text-slate-900 dark:text-white">{pack.subject}</strong> ({pack.totalMarks} marks)
+              </span>
+            ) : (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                No active pack yet — upload syllabus + PYQs and click Generate.
+              </span>
+            )}
             <button
               type="submit"
               disabled={generating}
@@ -656,7 +665,9 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
         )}
       </section>
 
-      {/* Mode Switcher + 1-Click PDF Export */}
+      {/* Mode Switcher + 1-Click PDF Export — shown only after a pack is generated */}
+      {pack && (
+      <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-[#0F1624]">
           <button
@@ -1194,7 +1205,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
                       onClick={() =>
                         downloadScannedImagesAsPdf(
                           scannedPages.map((p) => p.dataUrl),
-                          `nexlive-written-${pack.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`
+                          `cosmolib-written-${pack.subject.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`
                         )
                       }
                       className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3.5 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -1283,6 +1294,8 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

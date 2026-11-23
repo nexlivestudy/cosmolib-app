@@ -2,7 +2,101 @@ import 'dotenv/config';
 import express, { type Request, type Response, type NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel, Type, type GenerateContentParameters, type GenerateContentResponse } from '@google/genai';
+
+const PRIMARY_MODEL = (process.env.GEMINI_MODEL || '').trim() || 'gemini-3.8-flash';
+const FALLBACK_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-4-hydrogen',
+  'gemini-3.1-flash-lite',
+] as const;
+
+function shouldFallbackModel(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  const errObj = err as { status?: number; code?: number } | null;
+  const status = errObj?.status ?? errObj?.code;
+  return (
+    status === 404 ||
+    status === 503 ||
+    /\b404\b/i.test(msg) ||
+    /\b503\b/i.test(msg) ||
+    /NOT_FOUND/i.test(msg) ||
+    /UNAVAILABLE/i.test(msg) ||
+    /high demand/i.test(msg) ||
+    /is no longer available/i.test(msg) ||
+    /not found for API version/i.test(msg)
+  );
+}
+
+function formatAiErrorMessage(err: unknown, fallbackMessage: string): string {
+  const raw = err instanceof Error ? err.message : String(err ?? '');
+  if (!raw) return fallbackMessage;
+  try {
+    const parsed = JSON.parse(raw) as { error?: { message?: string } };
+    if (parsed?.error?.message) return parsed.error.message;
+  } catch {
+    // plain text error
+  }
+  return raw;
+}
+
+async function generateContentWithFallback(
+  ai: GoogleGenAI,
+  params: {
+    preferredModel?: string;
+    contents: GenerateContentParameters['contents'];
+    config?: GenerateContentParameters['config'];
+    thinkingLevel?: ThinkingLevel;
+  }
+): Promise<GenerateContentResponse> {
+  const candidates: string[] = [];
+  const addCandidate = (m?: string) => {
+    const trimmed = m?.trim();
+    if (trimmed && !candidates.includes(trimmed)) {
+      candidates.push(trimmed);
+    }
+  };
+
+  addCandidate(params.preferredModel);
+  addCandidate(PRIMARY_MODEL);
+  for (const fallback of FALLBACK_MODELS) {
+    addCandidate(fallback);
+  }
+
+  let lastError: unknown;
+  for (let i = 0; i < candidates.length; i++) {
+    const model = candidates[i];
+    const supportsThinkingLevel = /^gemini-[34]/i.test(model);
+    const mergedConfig: GenerateContentParameters['config'] = params.config
+      ? {
+          ...params.config,
+          ...(supportsThinkingLevel && params.thinkingLevel
+            ? { thinkingConfig: { thinkingLevel: params.thinkingLevel } }
+            : {}),
+        }
+      : supportsThinkingLevel && params.thinkingLevel
+        ? { thinkingConfig: { thinkingLevel: params.thinkingLevel } }
+        : undefined;
+
+    try {
+      return await ai.models.generateContent({
+        model,
+        contents: params.contents,
+        config: mergedConfig,
+      });
+    } catch (err) {
+      lastError = err;
+      if (shouldFallbackModel(err) && i < candidates.length - 1) {
+        console.warn(`[COSMOLIB AI] Model "${model}" unavailable, falling back to "${candidates[i + 1]}"`);
+        continue;
+      }
+      throw new Error(formatAiErrorMessage(err, 'AI generation failed. Please try again.'));
+    }
+  }
+
+  throw new Error(formatAiErrorMessage(lastError, 'All Gemini models failed. Please try again.'));
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,7 +215,7 @@ async function callOpenAICompatibleJson(params: {
   const defaultModel =
     params.provider === 'groq'
       ? 'llama-3.3-70b-versatile'
-      : 'google/gemini-2.5-flash';
+      : 'google/gemini-3.8-flash';
 
   const resp = await fetch(endpoint, {
     method: 'POST',
@@ -214,9 +308,10 @@ app.post('/api/ai/study-folder', aiRateLimit, async (req: Request, res: Response
       });
     } else {
       const ai = getGeminiClient(byok.provider === 'gemini' ? byok.apiKey : undefined);
-      const response = await ai.models.generateContent({
-        model: byok.modelOverride || 'gemini-2.5-flash',
+      const response = await generateContentWithFallback(ai, {
+        preferredModel: byok.modelOverride,
         contents: prompt,
+        thinkingLevel: ThinkingLevel.LOW,
         config: {
           systemInstruction,
           responseMimeType: 'application/json',
@@ -336,9 +431,10 @@ app.post('/api/ai/youtube-notes', aiRateLimit, async (req: Request, res: Respons
       });
     } else {
       const ai = getGeminiClient(byok.provider === 'gemini' ? byok.apiKey : undefined);
-      const response = await ai.models.generateContent({
-        model: byok.modelOverride || 'gemini-2.5-flash',
+      const response = await generateContentWithFallback(ai, {
+        preferredModel: byok.modelOverride,
         contents: prompt,
+        thinkingLevel: ThinkingLevel.LOW,
         config: {
           systemInstruction,
           responseMimeType: 'application/json',
@@ -428,9 +524,10 @@ Generate strictly valid JSON containing:
       });
     } else {
       const ai = getGeminiClient(byok.provider === 'gemini' ? byok.apiKey : undefined);
-      const response = await ai.models.generateContent({
-        model: byok.modelOverride || 'gemini-2.5-flash',
+      const response = await generateContentWithFallback(ai, {
+        preferredModel: byok.modelOverride,
         contents: prompt,
+        thinkingLevel: ThinkingLevel.LOW,
         config: {
           systemInstruction,
           responseMimeType: 'application/json',
@@ -706,8 +803,8 @@ CRITICAL GRADING FORMAT:
 5. missedSteps: 2-4 exact steps, keywords, or equations missing for full marks.
 6. modelImprovement: 1 concise actionable tip to score full marks next time.`;
 
-    const response = await ai.models.generateContent({
-      model: byok.provider === 'gemini' && byok.modelOverride ? byok.modelOverride : 'gemini-2.5-flash',
+    const response = await generateContentWithFallback(ai, {
+      preferredModel: byok.provider === 'gemini' ? byok.modelOverride : undefined,
       contents: {
         parts: [
           {
@@ -719,6 +816,7 @@ CRITICAL GRADING FORMAT:
           { text: prompt },
         ],
       },
+      thinkingLevel: ThinkingLevel.LOW,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {

@@ -38,7 +38,7 @@ export const PWAInstallButton: React.FC = () => {
             <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-[#111827]">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                  Install NEXLIVE on iPhone / iPad
+                  Install COSMOLIB on iPhone / iPad
                 </h3>
                 <button
                   type="button"
@@ -50,7 +50,7 @@ export const PWAInstallButton: React.FC = () => {
                 </button>
               </div>
               <ol className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <li>1. Open NEXLIVE over HTTPS in Safari.</li>
+                <li>1. Open COSMOLIB over HTTPS in Safari.</li>
                 <li>2. Tap the Share button in the Safari toolbar.</li>
                 <li>3. Scroll down and select Add to Home Screen.</li>
               </ol>
