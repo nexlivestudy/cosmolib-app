@@ -15,8 +15,8 @@ export default defineConfig(() => {
         includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
         manifest: {
           id: '/',
-          name: 'NEXLIVE — Global AI Study Computer',
-          short_name: 'NEXLIVE',
+          name: 'COSMOLIB — Global AI Study Computer',
+          short_name: 'COSMOLIB',
           description: 'All-in-One Global AI Study Computer with Smart Study Folders, Exam Panic Mode, Ultra-Block Focus Timer, and Silent Live-Cam Study Rooms.',
           theme_color: '#0B0F19',
           background_color: '#0B0F19',
