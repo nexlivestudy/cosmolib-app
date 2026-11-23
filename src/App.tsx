@@ -27,8 +27,8 @@ import { loadBYOKConfig, saveBYOKConfig } from './lib/aiClient';
 import { supabase } from './lib/supabase';
 import type { ActiveModule, BYOKConfig, StudyFolder, StudyGroup, UserProfile } from './types';
 
-const PROFILE_CACHE_PREFIX = 'nexlive_profile_';
-const FOLDERS_CACHE_PREFIX = 'nexlive_folders_';
+const PROFILE_CACHE_PREFIX = 'cosmolib_profile_';
+const FOLDERS_CACHE_PREFIX = 'cosmolib_folders_';
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -312,7 +312,7 @@ export default function App() {
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex dark:border-slate-800 dark:bg-[#0E1422]">
         <div className="flex h-16 items-center px-6 border-b border-slate-200 dark:border-slate-800">
           <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            NEXLIVE
+            COSMOLIB
           </span>
         </div>
 
@@ -366,7 +366,7 @@ export default function App() {
           <div className="relative z-10 flex w-64 flex-col bg-white p-4 dark:bg-[#0E1422]">
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <span className="font-display text-lg font-bold text-slate-900 dark:text-white">
-                NEXLIVE
+                COSMOLIB
               </span>
               <button
                 type="button"
