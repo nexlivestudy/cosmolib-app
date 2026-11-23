@@ -198,7 +198,7 @@ app.post('/api/ai/study-folder', aiRateLimit, async (req: Request, res: Response
         : `Topic: ${folderName} (${subjectTag || 'General Studies'}). Resources: ${resourceTitles.join(', ') || 'Core syllabus overview'}.`;
 
     const systemInstruction =
-      'You are NEXLIVE, a rigorous university study architect. Return strictly valid JSON matching the requested schema. Keep explanations crisp, high-yield, and exam-focused.';
+      'You are COSMOLIB, a rigorous university study architect. Return strictly valid JSON matching the requested schema. Keep explanations crisp, high-yield, and exam-focused.';
 
     const prompt = `Build automated AI study subfolders for folder "${folderName}" (Subject: ${subjectTag || 'General'}).\n\nSource material chunks:\n${contextText}\n\nGenerate:\n1. strategyPlan: 3-4 concrete study phases with duration, objective, and 3 actions each.\n2. easyConceptPdfs: 3-4 clean study sheets (title, summary, explanation, workedExample, keyTakeaway).\n3. formulasVault: 4-6 high-yield formulas, rules, or shortcuts (label, expression, whenToUse, trapToAvoid).\n4. concepts: 6-8 trackable concepts (title, difficulty: "Core"|"High Yield"|"Advanced", estimatedMins).`;
 
@@ -322,7 +322,7 @@ app.post('/api/ai/youtube-notes', aiRateLimit, async (req: Request, res: Respons
     }
 
     const byok = extractByok(req);
-    const systemInstruction = 'You are NEXLIVE, generating structured timestamped study notes for a distraction-free lecture player. Return valid JSON.';
+    const systemInstruction = 'You are COSMOLIB, generating structured timestamped study notes for a distraction-free lecture player. Return valid JSON.';
     const prompt = `Create 6 concise timestamped study checkpoints for the lecture "${title}" (Topic context: ${topicHint || title}). Each item must have "timestamp" (like "00:00", "04:15", "09:40", etc.) and "note" (actionable exam-focused summary).`;
 
     let jsonText = '';
@@ -389,7 +389,7 @@ app.post('/api/ai/exam-panic', aiRateLimit, async (req: Request, res: Response) 
     const byok = extractByok(req);
 
     const systemInstruction =
-      'You are NEXLIVE Exam Rescue Engine. Build a comprehensive, exam-ready Master Rescue Pack as strict JSON. Every Q&A MUST include a crisp lockInBox memory anchor. Every MCQ MUST have exactly 4 options (A-D) and a valid correctIndex (0-3).';
+      'You are COSMOLIB Exam Rescue Engine. Build a comprehensive, exam-ready Master Rescue Pack as strict JSON. Every Q&A MUST include a crisp lockInBox memory anchor. Every MCQ MUST have exactly 4 options (A-D) and a valid correctIndex (0-3).';
 
     const prompt = `Subject: ${subject}
 Total Exam Marks: ${totalMarks}
@@ -776,7 +776,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`NEXLIVE server running on http://0.0.0.0:${PORT}`);
+    console.log(`COSMOLIB server running on http://0.0.0.0:${PORT}`);
   });
 }
 
