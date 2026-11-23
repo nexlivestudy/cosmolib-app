@@ -21,6 +21,7 @@ import {
   chunkStudyText,
   extractSafeYouTubeId,
 } from '../utils/studyLogic';
+import { WorkspaceSkeletonLoader } from './ui/CosmolibPrimitives';
 
 interface StudyFoldersModuleProps {
   folders: StudyFolder[];
@@ -287,7 +288,7 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Left Folder Directory */}
       <aside className="space-y-4 lg:col-span-4 xl:col-span-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111827]">
+        <div className="cosmo-card p-4">
           <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">
             Study Folders
           </h2>
@@ -356,12 +357,12 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
       <section className="space-y-5 lg:col-span-8 xl:col-span-9">
         {selectedFolder && (
           <>
-            <div className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center dark:border-slate-800 dark:bg-[#111827]">
-              <div>
+            <div className="cosmo-card flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center">
+              <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 tabular-nums">
                   {selectedFolder.subjectTag} · {selectedFolder.resources.length} sources · {mastery.coveredCount}/{mastery.totalCount} concepts covered
                 </p>
-                <h1 className="mt-1 font-display text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="mt-1 truncate font-display text-2xl font-bold text-slate-900 dark:text-white">
                   {selectedFolder.name}
                 </h1>
               </div>
@@ -370,12 +371,16 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                 type="button"
                 disabled={generating}
                 onClick={handleGenerateSubfolders}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50 whitespace-nowrap shrink-0"
+                className="cosmo-btn-primary inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 whitespace-nowrap shrink-0"
               >
                 <Sparkles className="h-4 w-4" />
                 {generating ? 'Generating AI Subfolders...' : 'Generate AI Subfolders'}
               </button>
             </div>
+
+            {generating && (
+              <WorkspaceSkeletonLoader label="Building Master Study Strategy, Easy Concept PDFs & Formulas Vault..." />
+            )}
 
             {error && (
               <div role="alert" className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">

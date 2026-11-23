@@ -23,9 +23,13 @@ test('computeExamQuestionCount enforces 40 questions for marks >= 50 else 20', (
 
 test('chunkStudyText compacts whitespace and splits bounded chunks', () => {
   const text = 'Paragraph one   with   spaces.\n\n\n\nParagraph two.\n\nParagraph three.';
-  const chunks = chunkStudyText(text, 35, 6);
-  assert.equal(chunks.length, 3);
-  assert.equal(chunks[0], 'Paragraph one with spaces.');
+  const packed = chunkStudyText(text, 35, 6);
+  assert.equal(packed.length, 2);
+  assert.equal(packed[0], 'Paragraph one with spaces.');
+  assert.equal(packed[1], 'Paragraph two.\n\nParagraph three.');
+
+  const split = chunkStudyText(text, 28, 6);
+  assert.equal(split.length, 3);
   assert.equal(chunkStudyText('   ').length, 0);
 });
 

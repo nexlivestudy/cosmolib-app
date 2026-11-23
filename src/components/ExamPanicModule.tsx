@@ -33,6 +33,7 @@ import {
   validateVaultFile,
 } from '../utils/security';
 import { computeExamQuestionCount, scoreMcqAttempt } from '../utils/studyLogic';
+import { EmptyStateCard, WorkspaceSkeletonLoader } from './ui/CosmolibPrimitives';
 
 type PanicInputField = 'syllabus' | 'notes' | 'pyqs';
 
@@ -71,9 +72,10 @@ export function deriveTotalMarksNumber(raw: string): number {
 
 interface ExamPanicModuleProps {
   byok: BYOKConfig;
+  onPackGenerated?: () => void;
 }
 
-export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
+export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGenerated }) => {
   const [subject, setSubject] = useState('');
   const [totalMarksInput, setTotalMarksInput] = useState('60');
   const [syllabus, setSyllabus] = useState('');
@@ -344,6 +346,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
         byok
       );
       setPack(generated);
+      onPackGenerated?.();
       setSelectedTopicIdx(null);
       setTopicTab('explanation');
       setMcqAnswers({});
@@ -422,7 +425,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
   return (
     <div className="space-y-6">
       {/* Header & Input Builder */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-[#111827]">
+      <section className="cosmo-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
@@ -650,20 +653,38 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok }) => {
             <button
               type="submit"
               disabled={generating}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+              className="cosmo-btn-primary inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 whitespace-nowrap"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4 shrink-0" />
               {generating ? 'Building Master Rescue PDF...' : 'Generate Master Rescue PDF'}
             </button>
           </div>
         </form>
 
         {error && (
-          <div role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+          <div role="alert" className="mt-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-xs font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {error}
           </div>
         )}
       </section>
+
+      {/* Generating Skeleton Loader */}
+      {generating && (
+        <WorkspaceSkeletonLoader label="Synthesizing High-Yield Map, Master Rescue PDF & adaptive questions via Gemini 3.8 Flash..." />
+      )}
+
+      {/* Illustrated Empty State when no pack generated yet */}
+      {!pack && !generating && (
+        <EmptyStateCard
+          illustration="panic"
+          title="No active rescue pack yet"
+          description="Enter your Subject Name above, drop or paste your syllabus & PYQs, and generate a tailored Master Rescue PDF with clickable concept videos and exam practice."
+          actionLabel="Focus Subject Input"
+          onAction={() => {
+            document.getElementById('panic-subject')?.focus();
+          }}
+        />
+      )}
 
       {/* Mode Switcher + 1-Click PDF Export — shown only after a pack is generated */}
       {pack && (

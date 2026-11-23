@@ -366,7 +366,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
 
     if (!decision.allowed) {
       if (decision.reason === 'ultra_block_suppressed') {
-        setBuddyNotice('Alerts are suppressed while Ultra Block Lockdown is active.');
+        setBuddyNotice('Blocked by Schedule — Alerts are suppressed while Meditation Strict Mode is active.');
       } else {
         const minsLeft = Math.ceil(decision.remainingMs / 60000);
         setBuddyNotice(`3-hour cooldown active for ${target.name} (${minsLeft}m remaining).`);
@@ -383,7 +383,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
   return (
     <div className="space-y-5">
       {/* Top Group Selector + Study Live Camera Trigger */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111827]">
+      <div className="cosmo-card flex flex-wrap items-center justify-between gap-4 p-4">
         <div className="flex flex-wrap items-center gap-2">
           {joinedGroups.map((g) => (
             <button

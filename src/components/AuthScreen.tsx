@@ -208,7 +208,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             <div className="mt-5 grid max-w-md grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-300">
               <span>01. AI Smart Study Folders</span>
               <span>02. Exam Panic Mode</span>
-              <span>03. Ultra-Block Focus Timer</span>
+              <span>03. Smart Study Schedule</span>
               <span>04. Silent Live-Cam Rooms</span>
             </div>
           </div>
