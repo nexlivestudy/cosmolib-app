@@ -84,6 +84,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const langRef = useRef(lang);
   langRef.current = lang;
   const runId = useRef(0);
+  const busyRef = useRef(false);
+  const queuedRef = useRef(false);
 
   const setLang = useCallback((c: string) => {
     if (!WORLD_LANGUAGES.find((l) => l.code === c)) c = 'en';
@@ -101,7 +103,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let cancelled = false;
     let observer: MutationObserver | null = null;
     let debounce: number | undefined;
-    const myRun = ++runId.current;
 
     const restoreEnglish = () => {
       document.querySelectorAll('[data-orig-text]').forEach((el) => {
@@ -156,11 +157,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const run = async () => {
       if (langRef.current === 'en') { restoreEnglish(); setTranslating(false); return; }
+      if (busyRef.current) { queuedRef.current = true; return; } // carousel rotated mid-run: finish current batch first, then pick up new strings
+      busyRef.current = true;
       setTranslating(true);
       const { nodes, uniq, phEls } = collect();
-      if (uniq.length === 0 || myRun !== runId.current) { if (!cancelled) setTranslating(false); return; }
+      if (uniq.length === 0) { busyRef.current = false; if (!cancelled) setTranslating(false); return; }
       const out = await translateList(langRef.current, uniq);
-      if (cancelled || myRun !== runId.current) return;
       const map = new Map<string, string>();
       uniq.forEach((k, i) => map.set(k, out[i] || k));
       nodes.forEach((tn) => {
@@ -180,7 +182,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           el.setAttribute('placeholder', tr);
         }
       });
+      busyRef.current = false;
       if (!cancelled) setTranslating(false);
+      if (queuedRef.current && !cancelled && langRef.current !== 'en') {
+        queuedRef.current = false;
+        window.setTimeout(run, 600);
+      }
     };
 
     if (lang === 'en') { restoreEnglish(); }
@@ -188,7 +195,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const t = window.setTimeout(run, 350);
       observer = new MutationObserver(() => {
         window.clearTimeout(debounce);
-        debounce = window.setTimeout(run, 1500);
+        debounce = window.setTimeout(run, 2500);
       });
       observer.observe(document.body, { childList: true, subtree: true, characterData: false });
       return () => { cancelled = true; window.clearTimeout(t); observer?.disconnect(); window.clearTimeout(debounce); };
