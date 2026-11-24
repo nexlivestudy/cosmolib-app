@@ -399,7 +399,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
       maxMarks: 10,
       rubric: ['Core concepts', 'Step-by-step derivation', 'Final conclusion'],
 
-[924 more lines in file. Use offset=401 to continue.]    };
+    };
 
     setError(null);
     setGrading(true);
@@ -800,7 +800,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                         ...prev,
                         [topicKey]: { videoId: null, title: t.topic },
 
-[524 more lines in file. Use offset=801 to continue.]                      }));
+                      }));
                     } finally {
                       setLoadingVideoKey((cur) => (cur === topicKey ? null : cur));
                     }
@@ -1201,7 +1201,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                   onChange={handleScanPhotoUpload}
                   className="sr-only"
 
-[124 more lines in file. Use offset=1201 to continue.]                />
+                />
               </label>
 
               {scannedPages.length > 0 && (
