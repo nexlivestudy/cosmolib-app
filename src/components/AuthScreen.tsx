@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Mail, Moon, ShieldCheck, Sun } fro
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { ThemeMode } from '../types';
 import { AnimatedBackground } from './AnimatedBackground';
+import { COSMO_THEMES } from '../themes';
 import { ThemeGallery } from './ThemeGallery';
 import { useTheme } from '../hooks/useTheme';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -194,8 +195,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
       {/* Main Split Grid */}
       <main className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-8 px-6 pb-12 pt-4 lg:grid-cols-12">
+        <div className="col-span-full flex flex-wrap items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-slate-800 dark:bg-[#111827]/70">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Theme</span>
+          {COSMO_THEMES.map((th) => {
+            const on = th.id === cosmoThemeId;
+            return (
+              <button
+                key={th.id}
+                type="button"
+                title={th.name}
+                aria-label={'Use ' + th.name + ' theme'}
+                aria-pressed={on}
+                onClick={() => setCosmoTheme(th.id)}
+                className={'h-8 w-8 rounded-full transition-transform hover:scale-110' + (on ? ' ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-slate-900' : ' ring-1 ring-black/10 dark:ring-white/20')}
+                style={{ background: th.preview }}
+              />
+            );
+          })}
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{COSMO_THEMES.find((th) => th.id === cosmoThemeId)?.name}</span>
+        </div>
         {/* Left Editorial Visual */}
-        <section className="relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 sm:min-h-[380px] lg:col-span-7 lg:min-h-[520px] dark:border-slate-800">
+        <section className="relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 sm:min-h-[380px] lg:col-span-7 lg:min-h-[520px] dark:border-slate-800" style={{ borderColor: "color-mix(in srgb, var(--cosmo-accent) 45%, transparent)", boxShadow: "0 0 80px -18px var(--cosmo-glow)" }}>
           <img
             src="/src/assets/images/nexlive_auth_desk_1795318946835.jpg"
             alt="Minimalist late-night COSMOLIB study desk with notebook and lamp"
@@ -208,7 +228,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               Global AI Study Computer · Zero-Distraction Architecture
             </p>
             <h1 className="mt-2 max-w-xl font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
-              Lock in every exam, folder, and study room in one place.
+              Lock in every exam, folder, and <span style={{ backgroundImage: "linear-gradient(90deg, var(--cosmo-accent), var(--cosmo-accent2))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>study room</span> in one place.
             </h1>
             <div className="mt-5 grid max-w-md grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-300">
               <span>01. AI Smart Study Folders</span>
@@ -220,7 +240,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         </section>
 
         {/* Right Strict Email OTP Panel */}
-        <section className="flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-6 sm:p-10 lg:col-span-5 dark:border-slate-800 dark:bg-[#111827]">
+        <section className="flex flex-col justify-center rounded-2xl border bg-white p-6 sm:p-10 lg:col-span-5 dark:bg-[#111827]/85 dark:backdrop-blur-xl" style={{ borderColor: "color-mix(in srgb, var(--cosmo-accent) 40%, transparent)", boxShadow: "0 0 70px -20px var(--cosmo-glow), 0 24px 60px -24px rgba(0,0,0,.55)" }}>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <ShieldCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
             <span>Passwordless Email Verification</span>
@@ -291,7 +311,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               <button
                 type="submit"
                 disabled={loading || !supabaseReady}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cosmo-btn-3d inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span>{loading ? 'Sending Verification OTP...' : 'Send Verification OTP'}</span>
                 <ArrowRight className="h-4 w-4" />
@@ -328,7 +348,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               <button
                 type="submit"
                 disabled={loading || digits.join('').length !== 8}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cosmo-btn-3d inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span>{loading ? 'Verifying Code...' : 'Verify & Enter COSMOLIB'}</span>
                 <ArrowRight className="h-4 w-4" />
