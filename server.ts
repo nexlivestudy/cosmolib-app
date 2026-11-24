@@ -140,7 +140,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     "img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com",
     "media-src 'self' blob: https://*.supabase.co",
     "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
-    `connect-src 'self'${devConnect} ${supabaseOrigin} ${supabaseWs} https://0.peerjs.com wss://0.peerjs.com https://fonts.googleapis.com https://fonts.gstatic.com`,
+    `connect-src 'self'${devConnect} ${supabaseOrigin} ${supabaseWs} https://0.peerjs.com wss://0.peerjs.com https://fonts.googleapis.com https://fonts.gstatic.com https://translate.googleapis.com`,
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
