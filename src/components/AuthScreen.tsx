@@ -170,7 +170,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F8FAFC] text-slate-900 transition-colors dark:bg-[#0B0F19] dark:text-slate-100">
+    <div className="relative min-h-screen bg-transparent text-slate-900 transition-colors dark:text-slate-100">
       <AnimatedBackground themeId={cosmoThemeId} />
       {/* Top Bar */}
       <header className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-6 py-5">
