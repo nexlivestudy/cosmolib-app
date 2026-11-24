@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 import { Check } from 'lucide-react';
 import { COSMO_THEMES, type CosmoThemeId } from '../themes';
 
@@ -8,12 +9,13 @@ interface Props {
 }
 
 export const ThemeGallery: React.FC<Props> = ({ activeId, onSelect }) => {
+  const { t, lang } = useLanguage();
   return (
     <div className="w-full">
       <div className="mb-5 text-center sm:text-left">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">CosmoLib premium themes</p>
-        <h2 className="font-display mt-1 text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">Choose your vibe</h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Six living worlds. Same CosmoLib — pick the one that makes you say WOW.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{t('COSMOLIB PREMIUM THEMES')}</p>
+        <h2 className="font-display mt-1 text-2xl font-extrabold text-slate-900 dark:text-white sm:text-3xl">{t('Choose your vibe')}</h2>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{t('Six living worlds. Same CosmoLib — pick the one that makes you say WOW.')}</p>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {COSMO_THEMES.map((t) => {
@@ -53,7 +55,7 @@ export const ThemeGallery: React.FC<Props> = ({ activeId, onSelect }) => {
                 aria-pressed={active}
                 className={"cosmo-btn-3d mt-4 w-full px-4 py-2.5 text-sm " + (active ? "opacity-90" : "")}
               >
-                {active ? 'Selected — looking stunning' : 'Select ' + t.name}
+                {active ? (lang === 'hi' ? 'चुना गया — शानदार लग रहा है' : 'Selected — looking stunning') : (lang === 'hi' ? t.name + ' चुनें' : 'Select ' + t.name)}
               </button>
             </div>
           );
