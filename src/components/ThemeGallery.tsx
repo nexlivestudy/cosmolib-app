@@ -19,7 +19,7 @@ export const ThemeGallery: React.FC<Props> = ({ activeId, onSelect }) => {
         {COSMO_THEMES.map((t) => {
           const active = t.id === activeId;
           return (
-            <div key={t.id} className={"cosmo-theme-card cosmo-card p-4 " + (active ? "ring-2 ring-indigo-500" : "")}>
+            <div key={t.id} className={"cosmo-theme-card cosmo-card p-4 transition-all " + (active ? "cosmo-select-active ring-2 ring-indigo-500 shadow-lg" : "")}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-display text-lg font-extrabold text-slate-900 dark:text-white">{t.name}</h3>
