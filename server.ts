@@ -18,11 +18,18 @@ function shouldFallbackModel(err: unknown): boolean {
   const status = errObj?.status ?? errObj?.code;
   return (
     status === 404 ||
+    status === 429 ||
     status === 503 ||
     /\b404\b/i.test(msg) ||
+    /\b429\b/i.test(msg) ||
     /\b503\b/i.test(msg) ||
     /NOT_FOUND/i.test(msg) ||
     /UNAVAILABLE/i.test(msg) ||
+    /RESOURCE_EXHAUSTED/i.test(msg) ||
+    /RATE_LIMIT/i.test(msg) ||
+    /rate limit/i.test(msg) ||
+    /quota/i.test(msg) ||
+    /Too Many Requests/i.test(msg) ||
     /high demand/i.test(msg) ||
     /is no longer available/i.test(msg) ||
     /not found for API version/i.test(msg)
