@@ -398,7 +398,8 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
       question: `Written Exam Solution for ${pack.subject}`,
       maxMarks: 10,
       rubric: ['Core concepts', 'Step-by-step derivation', 'Final conclusion'],
-    };
+
+[924 more lines in file. Use offset=401 to continue.]    };
 
     setError(null);
     setGrading(true);
@@ -798,7 +799,8 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                       setResolvedConceptVideos((prev) => ({
                         ...prev,
                         [topicKey]: { videoId: null, title: t.topic },
-                      }));
+
+[524 more lines in file. Use offset=801 to continue.]                      }));
                     } finally {
                       setLoadingVideoKey((cur) => (cur === topicKey ? null : cur));
                     }
@@ -850,10 +852,10 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                               type="button"
                               data-topic-option="explanation"
                               onClick={() => setTopicTab('explanation')}
-                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition-all ${
                                 topicTab === 'explanation'
-                                  ? 'bg-indigo-600 text-white'
-                                  : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800'
+                                  ? 'cosmo-tab-active cosmo-tab-active-center bg-indigo-600 text-[13px] text-white shadow-md'
+                                  : 'border border-slate-300 bg-white text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800'
                               }`}
                             >
                               <BookOpen className="h-3.5 w-3.5" />
@@ -866,10 +868,10 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                                 setTopicTab('video');
                                 void ensureConceptVideo();
                               }}
-                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition-all ${
                                 topicTab === 'video'
-                                  ? 'bg-cyan-600 text-white'
-                                  : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800'
+                                  ? 'cosmo-tab-active cosmo-tab-active-center bg-cyan-600 text-[13px] text-white shadow-md'
+                                  : 'border border-slate-300 bg-white text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:bg-slate-800'
                               }`}
                             >
                               <PlayCircle className="h-3.5 w-3.5" />
@@ -1198,7 +1200,8 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                   capture="environment"
                   onChange={handleScanPhotoUpload}
                   className="sr-only"
-                />
+
+[124 more lines in file. Use offset=1201 to continue.]                />
               </label>
 
               {scannedPages.length > 0 && (
