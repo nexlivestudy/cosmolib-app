@@ -190,3 +190,7 @@
 
 .cosmo-animated-bg ~ * { position: relative; z-index: 1; }
 [data-theme] .cosmo-canvas { background-color: transparent !important; background-image: none !important; }
+
+.cosmo-aurora { opacity: .75; }
+.cosmo-orb { opacity: .95; }
+.cosmo-animated-bg { background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--cosmo-accent) 22%, transparent), transparent 60%), linear-gradient(160deg, var(--cosmo-bg0) 0%, var(--cosmo-bg1) 100%); }
