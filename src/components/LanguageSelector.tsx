@@ -30,7 +30,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
   const active = WORLD_LANGUAGES.find((l) => l.code === lang) || WORLD_LANGUAGES[0];
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative z-[9999] isolate">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -44,7 +44,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
         <span className={compact ? 'hidden sm:inline' : ''}>{active.native}</span>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-white/[0.1] dark:bg-[#111827]">
+        <div className="absolute right-0 top-full z-[9999] mt-2 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-white/[0.1] dark:bg-[#111827]">
           <div className="relative border-b border-slate-100 dark:border-slate-800">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
