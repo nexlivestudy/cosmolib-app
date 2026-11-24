@@ -113,7 +113,7 @@ const SLIDES: Slide[] = [
   {
     id: 'yesterday',
     kicker: 'You vs Yesterday',
-    title: <>Beat only one person: yesterday\u2019s you.</>,
+    title: <>Beat only one person: yesterday's you.</>,
     sub: 'Track minutes, streaks and mastery. Small progress daily becomes impossible to ignore.',
     badge: 'Progress you can see',
     icon: Crown,
