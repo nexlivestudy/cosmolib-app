@@ -150,3 +150,40 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ===== COSMOLIB premium themes: living background + 3D controls (free, CSS/canvas only) ===== */
+:root {
+  --cosmo-bg0: #070312; --cosmo-bg1: #150a3a;
+  --cosmo-accent: #8b5cf6; --cosmo-accent2: #22d3ee;
+  --cosmo-glow: rgba(139,92,246,.55);
+  --cosmo-btn1: #7c3aed; --cosmo-btn2: #4f46e5; --cosmo-btn-edge: #a78bfa;
+  --cosmo-orb1: rgba(139,92,246,.35); --cosmo-orb2: rgba(34,211,238,.28);
+}
+.cosmo-animated-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  background: linear-gradient(160deg, var(--cosmo-bg0) 0%, var(--cosmo-bg1) 100%);
+  transition: background 600ms ease; }
+.cosmo-animated-bg .cosmo-stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cosmo-aurora { position: absolute; width: 120vmax; height: 60vmax; left: -20vmax; top: -15vmax; opacity: .5; filter: blur(60px);
+  background: conic-gradient(from 90deg, transparent 0deg, var(--cosmo-orb1) 60deg, transparent 120deg, var(--cosmo-orb2) 200deg, transparent 260deg);
+  animation: cosmoAuroraDrift 22s ease-in-out infinite alternate; }
+.cosmo-aurora-b { left: auto; right: -25vmax; top: auto; bottom: -20vmax; animation-duration: 28s; animation-direction: alternate-reverse; }
+@keyframes cosmoAuroraDrift { from { transform: translate3d(-4%, -2%, 0) rotate(-4deg) scale(1); } to { transform: translate3d(5%, 4%, 0) rotate(5deg) scale(1.08); } }
+.cosmo-orb { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .8; }
+.cosmo-orb-1 { width: 44vmax; height: 44vmax; left: -10vmax; top: 20%; background: radial-gradient(circle, var(--cosmo-orb1), transparent 65%); animation: cosmoOrbFloat 18s ease-in-out infinite alternate; }
+.cosmo-orb-2 { width: 38vmax; height: 38vmax; right: -8vmax; bottom: -6vmax; background: radial-gradient(circle, var(--cosmo-orb2), transparent 65%); animation: cosmoOrbFloat 24s ease-in-out infinite alternate-reverse; }
+@keyframes cosmoOrbFloat { from { transform: translate3d(0, -3%, 0); } to { transform: translate3d(0, 4%, 0); } }
+.cosmo-vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 10%, transparent 55%, rgba(0,0,0,.35) 100%); }
+.cosmo-btn-3d { position: relative; border-radius: 14px; font-weight: 700; color: #fff;
+  background: linear-gradient(180deg, var(--cosmo-btn-edge) 0%, var(--cosmo-btn1) 18%, var(--cosmo-btn2) 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 -3px 0 rgba(0,0,0,.28) inset, 0 12px 28px -8px var(--cosmo-glow), 0 2px 8px rgba(0,0,0,.35);
+  border: 1px solid color-mix(in srgb, var(--cosmo-btn-edge) 65%, transparent);
+  transition: transform 140ms ease, box-shadow 160ms ease, filter 160ms ease; overflow: hidden; }
+.cosmo-btn-3d::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.5) 48%, transparent 62%);
+  transform: translateX(-120%); animation: cosmoShine 5s ease-in-out infinite; pointer-events: none; }
+@keyframes cosmoShine { 0%, 60% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.cosmo-btn-3d:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 -3px 0 rgba(0,0,0,.28) inset, 0 18px 36px -10px var(--cosmo-glow); }
+.cosmo-btn-3d:active:not(:disabled) { transform: translateY(1px) scale(.99); box-shadow: 0 0 0 rgba(0,0,0,0), 0 4px 14px -6px var(--cosmo-glow); }
+.cosmo-btn-3d:focus-visible { outline: 2px solid var(--cosmo-accent2); outline-offset: 2px; }
+.cosmo-theme-card { position: relative; border-radius: 18px; overflow: hidden; }
+@media (max-width: 400px) { .cosmo-theme-card { border-radius: 14px; } }
+@media (prefers-reduced-motion: reduce) { .cosmo-aurora, .cosmo-orb, .cosmo-btn-3d::after { animation: none !important; } }
