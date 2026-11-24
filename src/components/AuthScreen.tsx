@@ -5,6 +5,7 @@ import type { ThemeMode } from '../types';
 import { AnimatedBackground } from './AnimatedBackground';
 import { COSMO_THEMES } from '../themes';
 import { ThemeGallery } from './ThemeGallery';
+import { MotivationalShowcase } from './MotivationalShowcase';
 import { useTheme } from '../hooks/useTheme';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -223,20 +224,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19]/95 via-[#0B0F19]/55 to-[#0B0F19]/15" />
-          <div className="relative z-10 p-6 pt-20 sm:p-10 sm:pt-28">
-            <p className="text-xs font-medium text-cyan-300">
-              Global AI Study Computer · Zero-Distraction Architecture
-            </p>
-            <h1 className="mt-2 max-w-xl font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
-              Lock in every exam, folder, and <span style={{ backgroundImage: "linear-gradient(90deg, var(--cosmo-accent), var(--cosmo-accent2))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>study room</span> in one place.
-            </h1>
-            <div className="mt-5 grid max-w-md grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-300">
-              <span>01. AI Smart Study Folders</span>
-              <span>02. Exam Panic Mode</span>
-              <span>03. Smart Study Schedule</span>
-              <span>04. Silent Live-Cam Rooms</span>
-            </div>
-          </div>
+          <MotivationalShowcase />
         </section>
 
         {/* Right Strict Email OTP Panel */}
