@@ -81,7 +81,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
             )}
           </div>
           <p className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            Auto-translates whole app • Motivations stay in English
+            Auto-translates whole app including motivations
           </p>
         </div>
       )}
