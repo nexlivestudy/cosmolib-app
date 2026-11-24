@@ -88,7 +88,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
                     role="option"
                     aria-selected={on}
                     onClick={() => { setLang(l.code); setOpen(false); setQ(''); }}
-                    className={'flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm hover:bg-slate-100 dark:hover:bg-white/[0.06] ' + (on ? 'bg-indigo-50 dark:bg-indigo-500/10' : '')}
+                    className={'flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm hover:bg-slate-100 dark:hover:bg-white/[0.06] ' + (on ? 'cosmo-select-active bg-indigo-50 text-[15px] shadow-sm dark:bg-indigo-500/10' : '')}
                   >
                     <span className="min-w-0">
                       <span className="block truncate font-semibold text-slate-900 dark:text-white">{l.native}</span>
