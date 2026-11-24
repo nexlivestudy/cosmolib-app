@@ -59,7 +59,7 @@ function shuffled(arr: Slide[]): Slide[] {
   if (intro > 0) { const [s] = a.splice(intro, 1); a.unshift(s); }
   return a;
 }
-const SLIDES: Slide[] = BASE_SLIDES;
+const SLIDES: Slide[] = shuffled(BASE_SLIDES);
 
 export const MotivationalShowcase: React.FC = () => {
   const [index, setIndex] = useState(0);
