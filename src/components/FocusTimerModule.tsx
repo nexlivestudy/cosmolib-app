@@ -399,7 +399,7 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
         if (breakBucket > lastBreakTriggerBucketRef.current && rem > 60) {
           lastBreakTriggerBucketRef.current = breakBucket;
 
-[1186 more lines in file. Use offset=401 to continue.]          accumulatedElapsedRef.current = totalElapsedSecs;
+          accumulatedElapsedRef.current = totalElapsedSecs;
           sessionStartWallRef.current = null;
           const breakDurSecs = Math.max(1, strictSettings.pomodoroBreakDurationMins) * 60;
           breakEndTimestampRef.current = nowMs + breakDurSecs * 1000;
@@ -800,7 +800,7 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                 </h1>
                 <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
 
-[786 more lines in file. Use offset=801 to continue.]                  Drift-corrected precision timer with Regain-style motivational alarms, calls-only filter, and Meditation Strict Mode.
+                  Drift-corrected precision timer with Regain-style motivational alarms, calls-only filter, and Meditation Strict Mode.
                 </p>
               </div>
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -1201,7 +1201,7 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                   setFormStartTime(addSecondsToClock(base, 60));
                   setFormEndTime(addSecondsToClock(base, 60 + 45 * 60));
 
-[386 more lines in file. Use offset=1201 to continue.]                  setFormNotice('Pre-filled a 45m study window starting in 1 minute — click Add Schedule Alarm.');
+                  setFormNotice('Pre-filled a 45m study window starting in 1 minute — click Add Schedule Alarm.');
                 }}
               />
             </div>
