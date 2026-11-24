@@ -384,7 +384,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             Row-Level Security active · Verified sessions only · Encrypted via Supabase Auth
           </div>
         </section>
-      <section className="mx-auto w-full max-w-7xl px-6 pb-16">
+      <section className="col-span-full w-full pb-4">
         <ThemeGallery activeId={cosmoThemeId} onSelect={setCosmoTheme} />
       </section>
       </main>
