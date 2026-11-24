@@ -54,7 +54,7 @@ export const BYOKModal: React.FC<BYOKModalProps> = ({ open, config, onSave, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[99990] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
       <div
         role="dialog"
         aria-modal="true"
@@ -93,9 +93,9 @@ export const BYOKModal: React.FC<BYOKModalProps> = ({ open, config, onSave, onCl
                     key={p.id}
                     type="button"
                     onClick={() => setProvider(p.id)}
-                    className={`rounded-lg border p-3 text-left transition-colors ${
+                    className={`rounded-lg border p-3 text-left transition-all ${
                       active
-                        ? 'border-cyan-500 bg-cyan-500/10 text-slate-900 dark:text-slate-100'
+                        ? 'cosmo-select-active border-cyan-500 bg-cyan-500/10 text-slate-900 shadow-md dark:text-slate-100'
                         : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
