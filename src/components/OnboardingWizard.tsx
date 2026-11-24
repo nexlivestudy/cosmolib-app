@@ -18,6 +18,7 @@ import type {
 } from '../types';
 import { AnimatedBackground } from './AnimatedBackground';
 import { sanitizeUserText } from '../utils/security';
+import { supabase } from '../lib/supabase';
 import { useTheme } from '../hooks/useTheme';
 import { buildMatchedGroups } from '../utils/studyLogic';
 
@@ -187,6 +188,38 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     onComplete(profile, [universityBranchGroup, globalBranchGroup]);
   };
 
+  const handleSkip = () => {
+    const safeName = sanitizeUserText(displayName, 60) || 'Scholar';
+    const skipProfile: UserProfile = {
+      id: userId,
+      email,
+      displayName: safeName,
+      country: selectedCountry.name,
+      countryCode: selectedCountry.code,
+      dailyTargetHours: dailyTarget,
+      vibe,
+      streamCategory,
+      degreeLevel: degreeLevel || '',
+      branch: 'General Studies',
+      institution: 'Independent Cohort',
+      primaryGroupId: globalBranchGroup.id,
+      joinedGroupIds: [globalBranchGroup.id],
+      streakDays: 1,
+      minutesStudiedToday: 0,
+      onboardingComplete: true,
+    };
+    onComplete(skipProfile, [globalBranchGroup]);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase?.auth.signOut();
+    } catch {
+      // ignore - still leave onboarding
+    }
+    window.location.reload();
+  };
+
   return (
     <div className="relative min-h-screen bg-transparent text-slate-900 transition-colors dark:text-slate-100">
       <AnimatedBackground themeId={cosmoThemeId} />
@@ -209,6 +242,23 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
           </button>
         </div>
       </header>
+
+      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-2 px-6 pb-1">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          ← Back to Sign In
+        </button>
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          Skip for now →
+        </button>
+      </div>
 
       <main className="mx-auto max-w-4xl px-6 pb-16 pt-2">
         {/* Progress Bar */}
