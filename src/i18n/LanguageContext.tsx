@@ -106,11 +106,35 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     let observer: MutationObserver | null = null;
     let debounce: number | undefined;
 
+    // Restore original English WITHOUT destroying nested markup (icons, spans).
+    // Each translated element stores orig + translated text; we swap the text
+    // back inside its own text nodes only.
     const restoreEnglish = () => {
       document.querySelectorAll('[data-orig-text]').forEach((el) => {
         const o = (el as HTMLElement).dataset.origText;
-        if (o != null) (el as HTMLElement).textContent = o;
+        const tr = (el as HTMLElement).dataset.trText;
+        if (o != null) {
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          let replaced = false;
+          while (walker.nextNode()) {
+            const tn = walker.currentNode as Text;
+            const cur = tn.nodeValue || '';
+            if (tr && cur.includes(tr)) {
+              tn.nodeValue = cur.split(tr).join(o);
+              replaced = true;
+            } else if (!tr && cur.trim() && o && cur.includes(cur.trim())) {
+              // Fallback: replace whole trimmed content when translation unknown
+              tn.nodeValue = cur.replace(cur.trim(), o);
+              replaced = true;
+            }
+          }
+          if (!replaced) {
+            // Last resort (structure already flattened earlier): restore text
+            (el as HTMLElement).textContent = o;
+          }
+        }
         delete (el as HTMLElement).dataset.origText;
+        delete (el as HTMLElement).dataset.trText;
       });
       document.querySelectorAll('[data-orig-ph]').forEach((el) => {
         const o = (el as HTMLElement).dataset.origPh;
@@ -134,7 +158,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (p.closest('script,style,code,pre')) return NodeFilter.FILTER_REJECT;
           if (p.closest('[data-orig-text]')) return NodeFilter.FILTER_REJECT; // already translated
           if (/^[0-9\s.,:%\/\-+@]+$/.test(v)) return NodeFilter.FILTER_REJECT;
-          if (v.length > 280) return NodeFilter.FILTER_REJECT;
+          if (v.length > 500) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         },
       });
@@ -146,15 +170,21 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!v || seen.has(v)) continue;
         seen.set(v, v);
         nodes.push(tn);
-        if (seen.size >= 80) break;
+        if (seen.size >= 150) break;
       }
       const phEls: HTMLElement[] = [];
       document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach((el) => {
         if ((el as HTMLElement).hasAttribute('data-orig-ph')) return;
         const ph = (el as HTMLElement).getAttribute('placeholder') || '';
-        if (ph && ph.length >= 2 && !seen.has(ph) && seen.size < 90) { seen.set(ph, ph); phEls.push(el as HTMLElement); }
+        if (ph && ph.length >= 2 && !seen.has(ph) && seen.size < 170) { seen.set(ph, ph); phEls.push(el as HTMLElement); }
       });
-      return { nodes, uniq: [...seen.keys()], phEls };
+      const ariaEls: HTMLElement[] = [];
+      document.querySelectorAll('[aria-label]').forEach((el) => {
+        if ((el as HTMLElement).hasAttribute('data-orig-aria')) return;
+        const a = (el as HTMLElement).getAttribute('aria-label') || '';
+        if (a && a.length >= 2 && !seen.has(a) && seen.size < 190) { seen.set(a, a); ariaEls.push(el as HTMLElement); }
+      });
+      return { nodes, uniq: [...seen.keys()], phEls, ariaEls };
     };
 
     const run = async () => {
@@ -162,9 +192,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (busyRef.current) { queuedRef.current = true; return; } // carousel rotated mid-run: finish current batch first, then pick up new strings
       busyRef.current = true;
       setTranslating(true);
-      const { nodes, uniq, phEls } = collect();
+      // ALWAYS translate from original English: a previous language (e.g. Hindi)
+      // must never be used as the source for the next one (e.g. Tamil).
+      restoreEnglish();
+      if (cancelled || langRef.current === 'en') { busyRef.current = false; if (!cancelled) setTranslating(false); return; }
+      const { nodes, uniq, phEls, ariaEls } = collect();
       if (uniq.length === 0) { busyRef.current = false; if (!cancelled) setTranslating(false); return; }
       const out = await translateList(langRef.current, uniq);
+      if (cancelled) { busyRef.current = false; return; }
       const map = new Map<string, string>();
       uniq.forEach((k, i) => map.set(k, out[i] || k));
       nodes.forEach((tn) => {
@@ -173,6 +208,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const p = tn.parentElement;
         if (tr && tr !== v && p && !p.hasAttribute('data-orig-text') && p.isConnected) {
           p.setAttribute('data-orig-text', v);
+          p.setAttribute('data-tr-text', tr);
           tn.nodeValue = (tn.nodeValue || '').replace(v, tr);
         }
       });
@@ -182,6 +218,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (tr && tr !== ph && el.isConnected) {
           el.setAttribute('data-orig-ph', ph);
           el.setAttribute('placeholder', tr);
+        }
+      });
+      ariaEls.forEach((el) => {
+        const a = el.getAttribute('aria-label') || '';
+        const tr = map.get(a);
+        if (tr && tr !== a && el.isConnected) {
+          el.setAttribute('data-orig-aria', a);
+          el.setAttribute('aria-label', tr);
         }
       });
       busyRef.current = false;
