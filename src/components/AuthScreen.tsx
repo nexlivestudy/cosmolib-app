@@ -7,8 +7,8 @@ import { COSMO_THEMES } from '../themes';
 import { ThemeGallery } from './ThemeGallery';
 import { MotivationalShowcase } from './MotivationalShowcase';
 import { LanguageSelector } from './LanguageSelector';
-import { useLanguage } from '../i18n/LanguageContext';
 import { useTheme } from '../hooks/useTheme';
+import { useLanguage } from '../i18n/LanguageContext';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface AuthScreenProps {
@@ -50,7 +50,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     const normalizedEmail = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setError('Enter a valid email address to receive your 8-digit verification code.');
+      setError(t('Enter a valid email address to receive your 8-digit verification code.'));
       return;
     }
 
@@ -144,7 +144,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     setError(null);
     const token = digits.join('');
     if (token.length !== 8) {
-      setError('Enter all 8 digits from your verification email.');
+      setError(t('Enter all 8 digits from your verification email.'));
       return;
     }
     if (!supabase) {
@@ -189,11 +189,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             onClick={onToggleTheme}
-            aria-label={theme === 'dark' ? t('Switch to Light Mode') : t('Switch to Dark Mode')}
+            aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 whitespace-nowrap shrink-0 dark:border-slate-800 dark:bg-[#111827] dark:text-slate-200 dark:hover:bg-slate-800"
           >
             {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-indigo-600" />}
-            {theme === 'dark' ? t('Light Mode') : t('Dark Mode')}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>
       </header>
@@ -342,7 +342,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 disabled={loading || digits.join('').length !== 8}
                 className="cosmo-btn-3d inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span>{loading ? 'Verifying Code...' : 'Verify & Enter COSMOLIB'}</span>
+                <span>{loading ? t('Verifying Code...') : t('Verify & Enter COSMOLIB')}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
 
@@ -357,7 +357,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   className="inline-flex items-center gap-1.5 font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
-                  Change Email
+                  {t('Change Email')}
                 </button>
 
                 <button
@@ -366,7 +366,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   onClick={() => handleSendOtp()}
                   className="font-semibold text-cyan-700 hover:text-cyan-600 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-cyan-400 dark:hover:text-cyan-300 dark:disabled:text-slate-600 tabular-nums"
                 >
-                  {cooldown > 0 ? `Resend OTP in ${cooldown}s` : 'Resend OTP'}
+                  {cooldown > 0 ? `${t('Resend OTP')} (${cooldown}s)` : t('Resend OTP')}
                 </button>
               </div>
             </form>
