@@ -333,9 +333,9 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                     setSelectedFolderId(folder.id);
                     setActiveYoutubeId(null);
                   }}
-                  className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                  className={`w-full rounded-lg border p-3 text-left transition-all ${
                     isSelected
-                      ? 'border-cyan-500 bg-cyan-500/10'
+                      ? 'cosmo-select-active border-cyan-500 bg-cyan-500/10 shadow-md'
                       : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800/70'
                   }`}
                 >
@@ -409,10 +409,10 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
+                  className={`rounded-md px-3 py-1.5 font-semibold transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'bg-white text-slate-900 shadow-xs dark:bg-[#1E293B] dark:text-white'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'cosmo-tab-active cosmo-tab-active-center bg-white text-[13.5px] text-slate-900 shadow-md dark:bg-[#1E293B] dark:text-white'
+                      : 'text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
