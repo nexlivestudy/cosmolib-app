@@ -107,7 +107,6 @@ export const MotivationalShowcase: React.FC = () => {
 
   return (
     <div
-      data-keep-english="true"
       className="relative z-10 p-6 pt-20 sm:p-10 sm:pt-28"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
