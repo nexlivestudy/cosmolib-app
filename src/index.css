@@ -187,3 +187,6 @@
 .cosmo-theme-card { position: relative; border-radius: 18px; overflow: hidden; }
 @media (max-width: 400px) { .cosmo-theme-card { border-radius: 14px; } }
 @media (prefers-reduced-motion: reduce) { .cosmo-aurora, .cosmo-orb, .cosmo-btn-3d::after { animation: none !important; } }
+
+.cosmo-animated-bg ~ * { position: relative; z-index: 1; }
+[data-theme] .cosmo-canvas { background-color: transparent !important; background-image: none !important; }
