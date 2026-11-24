@@ -7,6 +7,7 @@ import { COSMO_THEMES } from '../themes';
 import { ThemeGallery } from './ThemeGallery';
 import { MotivationalShowcase } from './MotivationalShowcase';
 import { LanguageSelector } from './LanguageSelector';
+import { useLanguage } from '../i18n/LanguageContext';
 import { useTheme } from '../hooks/useTheme';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -32,6 +33,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
   const supabaseReady = isSupabaseConfigured();
   const { cosmoThemeId, setCosmoTheme } = useTheme();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -233,15 +235,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         <section className="flex flex-col justify-center rounded-2xl border bg-white p-6 sm:p-10 lg:col-span-5 dark:bg-[#111827]/85 dark:backdrop-blur-xl" style={{ borderColor: "color-mix(in srgb, var(--cosmo-accent) 40%, transparent)", boxShadow: "0 0 70px -20px var(--cosmo-glow), 0 24px 60px -24px rgba(0,0,0,.55)" }}>
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             <ShieldCheck className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-            <span>Passwordless Email Verification</span>
+            <span>{t('Passwordless Email Verification')}</span>
           </div>
 
           <h2 className="mt-3 font-display text-2xl font-bold text-slate-900 dark:text-white">
-            {step === 'email' ? 'Sign in or create your study desk' : 'Enter 8-digit verification code'}
+            {step === 'email' ? t('Sign in or create your study desk') : t('Enter 8-digit verification code')}
           </h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             {step === 'email'
-              ? 'We will email you a one-time 8-digit code via Supabase Auth. New students go straight into cohort matching.'
+              ? t('We will email you a one-time 8-digit code via Supabase Auth. New students go straight into cohort matching.')
               : `Enter the 8-digit OTP emailed to ${email}.`}
           </p>
 
@@ -281,7 +283,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   htmlFor="auth-email-input"
                   className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  Student Email Address
+                  {t('Student Email Address')}
                 </label>
                 <div className="relative mt-1.5">
                   <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -303,7 +305,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 disabled={loading || !supabaseReady}
                 className="cosmo-btn-3d inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span>{loading ? 'Sending Verification OTP...' : 'Send Verification OTP'}</span>
+                <span>{loading ? t('Sending Verification OTP...') : t('Send Verification OTP')}</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </form>
@@ -311,7 +313,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  8-Digit Verification Code
+                  {t('8-Digit Verification Code')}
                 </label>
                 <div className="mt-2 grid grid-cols-8 gap-1.5 sm:gap-2">
                   {digits.map((digit, idx) => (
@@ -371,7 +373,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           )}
 
           <div className="mt-8 border-t border-slate-200 pt-5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            Row-Level Security active · Verified sessions only · Encrypted via Supabase Auth
+            {t('Row-Level Security active · Verified sessions only · Encrypted via Supabase Auth')}
           </div>
         </section>
       <section className="col-span-full w-full pb-4">
