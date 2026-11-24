@@ -37,7 +37,7 @@ const BASE_SLIDES: Slide[] = [
   { id: 'future-1', kicker: 'Future You Is Watching', title: <>Study now, thank yourself later.</>, sub: 'Press Start on a focus block. Your future rank is built in this exact hour.', badge: 'This hour counts', icon: Rocket },
   { id: 'power-1', kicker: 'Power Thought', title: <>I am a student who never quits.</>, sub: 'Say it once before opening books. Identity drives action.', badge: 'Identity first', icon: Sparkles },
   { id: 'power-2', kicker: 'Power Thought', title: <>Hard chapters make strong minds.</>, sub: 'If it feels tough, it is working. Stay 10 minutes more.', badge: 'Stay 10 more', icon: Zap },
-  { id: 'power-3', kicker: 'Power Thought', title: <>Slow progress is still progress.</>, sub: 'Do not compare day 5 to someone's year 2. Compare to your day 1.', badge: 'Keep climbing', icon: Flame },
+  { id: 'power-3', kicker: 'Power Thought', title: <>Slow progress is still progress.</>, sub: 'Do not compare day 5 to someone’s year 2. Compare to your day 1.', badge: 'Keep climbing', icon: Flame },
   { id: 'power-4', kicker: 'Power Thought', title: <>Distraction can wait. Dreams cannot.</>, sub: 'Reels, chats, games — all there after the block. Dream first.', badge: 'Dream first', icon: ShieldCheck },
   { id: 'power-5', kicker: 'Power Thought', title: <>Mistakes are marks in making.</>, sub: 'Every wrong answer in practice is one less wrong in the exam.', badge: 'Wrong now · right later', icon: Trophy },
   { id: 'power-6', kicker: 'Power Thought', title: <>Your parents believe. Prove them right.</>, sub: 'They work hard so you can study in peace. Honour it with one sincere hour.', badge: 'Make them proud', icon: Crown },
