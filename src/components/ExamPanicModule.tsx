@@ -298,7 +298,6 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
   const mcqScore = useMemo(
     () => scoreMcqAttempt(mcqAnswers, pack?.mcqQuestions ?? []),
     [mcqAnswers, pack?.mcqQuestions]
-
   );
 
   const composeAiFieldPayload = (field: PanicInputField, manualText: string): string => {
@@ -599,7 +598,6 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                         className="text-[11px] leading-snug text-amber-800 dark:text-amber-200"
                       >
                         Scanned image-based PDF attached (no embedded text layer). You can still click Generate using your Subject Name &amp; notes, or scan pages in Mode 2.
-
                       </p>
                     ) : (
                       (() => {
@@ -900,7 +898,6 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                                       <li key={ptIdx} className="flex items-start gap-1.5">
                                         <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">
                                           •
-
                                         </span>
                                         <span>{pt}</span>
                                       </li>
@@ -1201,7 +1198,6 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
                   capture="environment"
                   onChange={handleScanPhotoUpload}
                   className="sr-only"
-
                 />
               </label>
 
@@ -1325,4 +1321,3 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
     </div>
   );
 };
-
