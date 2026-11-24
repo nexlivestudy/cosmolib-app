@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { MOTIV_HI } from '../i18n/dict';
+import { useLanguage } from '../i18n/LanguageContext';
 import { Brain, ChevronLeft, ChevronRight, Clock, Crown, Flame, FolderKanban, Pause, Play, Rocket, ShieldCheck, Sparkles, Target, Trophy, Users, Zap } from 'lucide-react';
 
 interface Slide {
@@ -86,7 +88,13 @@ export const MotivationalShowcase: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [index, paused]);
 
+  const { lang } = useLanguage();
   const slide = SLIDES[index];
+  const loc = lang === 'hi' ? MOTIV_HI[slide.id] : undefined;
+  const kicker: string = loc?.kicker ?? slide.kicker;
+  const title: React.ReactNode = loc ? loc.title : slide.title;
+  const sub: string = loc?.sub ?? slide.sub;
+  const badge: string = loc?.badge ?? slide.badge;
   const Icon = slide.icon;
 
   return (
@@ -116,19 +124,19 @@ export const MotivationalShowcase: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-200 backdrop-blur">
             <Icon className="h-3.5 w-3.5" />
-            {slide.kicker}
+            {kicker}
           </span>
         </div>
         <h1 className="mt-3 max-w-xl font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
-          {slide.title}
+          {title}
         </h1>
-        <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-300">{slide.sub}</p>
-        {slide.footer ? (
+        <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-300">{sub}</p>
+        {!loc && slide.footer ? (
           slide.footer
         ) : (
           <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-200 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            {slide.badge}
+            {badge}
           </div>
         )}
       </div>
