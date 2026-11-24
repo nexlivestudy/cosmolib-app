@@ -176,7 +176,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     <div className="relative min-h-screen bg-transparent text-slate-900 transition-colors dark:text-slate-100">
       <AnimatedBackground themeId={cosmoThemeId} />
       {/* Top Bar */}
-      <header className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-6 py-5">
+      <header className="relative z-40 mx-auto flex max-w-7xl items-center justify-between gap-8 overflow-visible px-6 py-5">
         <span className="font-display text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 dark:text-white">
           COSMOLIB
         </span>
