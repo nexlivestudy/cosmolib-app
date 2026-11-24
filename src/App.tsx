@@ -26,6 +26,7 @@ import { StudyFoldersModule } from './components/StudyFoldersModule';
 import { CosmolibLogoMark, WorkspaceSkeletonLoader } from './components/ui/CosmolibPrimitives';
 import { EXPLORE_STUDY_GROUPS, INITIAL_STUDY_FOLDERS } from './data/catalog';
 import { useTheme } from './hooks/useTheme';
+import { AnimatedBackground } from './components/AnimatedBackground';
 import { loadBYOKConfig, saveBYOKConfig } from './lib/aiClient';
 import { supabase } from './lib/supabase';
 import type { ActiveModule, BYOKConfig, StudyFolder, StudyGroup, UserProfile } from './types';
@@ -42,7 +43,7 @@ function getInitials(name: string): string {
 }
 
 export default function App() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, cosmoThemeId } = useTheme();
   const [authChecking, setAuthChecking] = useState(true);
   const [authUser, setAuthUser] = useState<{ id: string; email: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -383,7 +384,8 @@ export default function App() {
 
   if (authChecking) {
     return (
-      <div className="cosmo-canvas flex min-h-screen items-center justify-center p-6">
+      <div className="cosmo-canvas relative flex min-h-screen items-center justify-center p-6">
+      <AnimatedBackground themeId={cosmoThemeId} />
         <div className="w-full max-w-xl">
           <WorkspaceSkeletonLoader label="Verifying COSMOLIB session..." />
         </div>
@@ -424,7 +426,8 @@ export default function App() {
   const userInitials = getInitials(profile.displayName);
 
   return (
-    <div className="cosmo-canvas flex min-h-screen text-slate-900 dark:text-slate-100">
+    <div className="cosmo-canvas relative flex min-h-screen text-slate-900 dark:text-slate-100">
+      <AnimatedBackground themeId={cosmoThemeId} />
       {/* Desktop Sidebar (256px, glass surface, active indigo glow) */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200/90 bg-white/90 backdrop-blur-md lg:flex dark:border-white/[0.08] dark:bg-[#0E1422]/90">
         <div className="flex h-16 items-center gap-3 border-b border-slate-200/90 px-5 dark:border-white/[0.08]">
