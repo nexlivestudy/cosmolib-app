@@ -72,13 +72,6 @@ export const MotivationalShowcase: React.FC = () => {
     setIndex((p) => (p + d + SLIDES.length) % SLIDES.length);
   }, []);
 
-  const goTo = useCallback((i: number) => {
-    setIndex((p) => {
-      setDir(i > p ? 1 : -1);
-      return i;
-    });
-  }, []);
-
   // Auto-swipe like big apps: readable 5s pause -> swipe next -> infinite loop
   useEffect(() => {
     if (paused) return;
