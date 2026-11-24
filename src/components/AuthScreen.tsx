@@ -6,6 +6,7 @@ import { AnimatedBackground } from './AnimatedBackground';
 import { COSMO_THEMES } from '../themes';
 import { ThemeGallery } from './ThemeGallery';
 import { MotivationalShowcase } from './MotivationalShowcase';
+import { LanguageSelector } from './LanguageSelector';
 import { useTheme } from '../hooks/useTheme';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -181,6 +182,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         </span>
 
         <div className="flex items-center gap-3 shrink-0">
+          <LanguageSelector compact />
           <PWAInstallButton />
           <button
             type="button"
