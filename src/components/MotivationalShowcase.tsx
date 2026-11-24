@@ -122,11 +122,11 @@ export const MotivationalShowcase: React.FC = () => {
         touchX.current = null;
       }}
     >
-      <style>{\`@keyframes cosmo-slide-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+      <style>{`@keyframes cosmo-slide-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .cosmo-slide-enter { animation: cosmo-slide-up .55s cubic-bezier(.22,1,.36,1) both; }
 @keyframes cosmo-progress { from { width: 0%; } to { width: 100%; } }
 .cosmo-progress-bar { animation: cosmo-progress 5.5s linear forwards; }
-@media (prefers-reduced-motion: reduce) { .cosmo-slide-enter, .cosmo-progress-bar { animation: none !important; } }\`}</style>
+@media (prefers-reduced-motion: reduce) { .cosmo-slide-enter, .cosmo-progress-bar { animation: none !important; } }`}</style>
 
       <div key={slide.id} className="cosmo-slide-enter" aria-live="polite">
         <div className="flex items-center gap-2">
