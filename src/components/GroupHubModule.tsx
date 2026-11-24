@@ -390,10 +390,10 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
               key={g.id}
               type="button"
               onClick={() => onSelectGroup(g.id)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
+              className={`rounded-lg px-3 py-1.5 font-semibold transition-all whitespace-nowrap ${
                 currentGroup?.id === g.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-300'
+                  ? 'cosmo-tab-active cosmo-tab-active-center bg-indigo-600 text-[13px] text-white shadow-md'
+                  : 'border border-slate-200 bg-slate-50 text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-300'
               }`}
             >
               {g.name}
