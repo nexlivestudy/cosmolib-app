@@ -398,7 +398,6 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
         const breakBucket = Math.floor(totalElapsedSecs / breakCadenceSecs);
         if (breakBucket > lastBreakTriggerBucketRef.current && rem > 60) {
           lastBreakTriggerBucketRef.current = breakBucket;
-
           accumulatedElapsedRef.current = totalElapsedSecs;
           sessionStartWallRef.current = null;
           const breakDurSecs = Math.max(1, strictSettings.pomodoroBreakDurationMins) * 60;
@@ -799,7 +798,6 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                   Schedule &amp; Deep Focus Engine
                 </h1>
                 <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-
                   Drift-corrected precision timer with Regain-style motivational alarms, calls-only filter, and Meditation Strict Mode.
                 </p>
               </div>
@@ -1097,7 +1095,7 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                         setFormTone(tone.id);
                         cosmolibAudio.previewTone(tone.id, formVolume);
                       }}
-                      className={`rounded-lg border p-2.5 text-left transition-colors ${
+                      className={`rounded-lg border p-2.5 text-left transition-all ${
                         active
                           ? 'cosmo-select-active border-cyan-500 bg-cyan-500/10 text-slate-900 shadow-md dark:text-white'
                           : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-300'
@@ -1200,7 +1198,6 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                   const base = new Date();
                   setFormStartTime(addSecondsToClock(base, 60));
                   setFormEndTime(addSecondsToClock(base, 60 + 45 * 60));
-
                   setFormNotice('Pre-filled a 45m study window starting in 1 minute — click Add Schedule Alarm.');
                 }}
               />
