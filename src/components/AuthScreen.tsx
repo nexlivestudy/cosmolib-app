@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Mail, Moon, ShieldCheck, Sun } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { ThemeMode } from '../types';
+import { AnimatedBackground } from './AnimatedBackground';
+import { ThemeGallery } from './ThemeGallery';
+import { useTheme } from '../hooks/useTheme';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface AuthScreenProps {
@@ -25,6 +28,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const supabaseReady = isSupabaseConfigured();
+  const { cosmoThemeId, setCosmoTheme } = useTheme();
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -166,7 +170,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 transition-colors dark:bg-[#0B0F19] dark:text-slate-100">
+    <div className="relative min-h-screen bg-[#F8FAFC] text-slate-900 transition-colors dark:bg-[#0B0F19] dark:text-slate-100">
+      <AnimatedBackground themeId={cosmoThemeId} />
       {/* Top Bar */}
       <header className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-6 py-5">
         <span className="font-display text-xl font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 dark:text-white">
@@ -359,6 +364,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             Row-Level Security active · Verified sessions only · Encrypted via Supabase Auth
           </div>
         </section>
+      <section className="mx-auto w-full max-w-7xl px-6 pb-16">
+        <ThemeGallery activeId={cosmoThemeId} onSelect={setCosmoTheme} />
+      </section>
       </main>
     </div>
   );
