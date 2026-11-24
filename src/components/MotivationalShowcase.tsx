@@ -63,11 +63,54 @@ function shuffled(arr: Slide[]): Slide[] {
 }
 const SLIDES: Slide[] = shuffled(BASE_SLIDES);
 
+// Plain-text titles for pre-translation (JSX above carries styling only).
+const TITLE_TEXT: Record<string, string> = {
+  'lock-in': 'Lock in every exam, folder, and study room in one place.',
+  'mind-1': 'Your mind obeys training. Train it daily.',
+  'mind-2': 'See the rank before you earn it.',
+  'mind-3': 'A calm mind recalls faster.',
+  'mind-4': 'Your brain can learn anything.',
+  'con-1': 'Small daily wins beat last-night panic.',
+  'con-2': 'Even 20 minutes keeps the fire alive.',
+  'con-3': 'Discipline makes you dangerous to average.',
+  'conf-1': 'Toppers are not born. They are built.',
+  'conf-2': 'Sit straight. Study like you mean it.',
+  'conf-3': 'The paper fears a prepared mind.',
+  'task-1': 'Turn scary syllabus into tiny tasks.',
+  'task-2': 'If it takes 2 minutes, start it now.',
+  'focus-1': 'One focused hour beats five distracted hours.',
+  'focus-2': 'Every unlock costs you 10 minutes.',
+  'mem-1': 'Revision beats re-reading. Every time.',
+  'mem-2': 'Explain it simply, remember it forever.',
+  'together-1': 'When they lock in, you lock in.',
+  'together-2': 'Promise one person your target today.',
+  'you-1': "Beat only one person: yesterday's you.",
+  'future-1': 'Study now, thank yourself later.',
+  'power-1': 'I am a student who never quits.',
+  'power-2': 'Hard chapters make strong minds.',
+  'power-3': 'Slow progress is still progress.',
+  'power-4': 'Distraction can wait. Dreams cannot.',
+  'power-5': 'Mistakes are marks in making.',
+  'power-6': 'Your parents believe. Prove them right.',
+  'power-7': 'One chapter a day keeps failure away.',
+  'power-8': 'Winners revise when others sleep.',
+  'power-9': 'You have survived 100% of tough days.',
+};
+const FOOTER_LINES = ['01. AI Smart Study Folders', '02. Exam Panic Mode', '03. Smart Study Schedule', '04. Silent Live-Cam Rooms'];
+
+interface ShownSlide { id: string; kicker: string; title: string; sub: string; badge: string; footer: string[] | null; pre: boolean }
+
+function englishShown(s: Slide): ShownSlide {
+  return { id: s.id, kicker: s.kicker, title: TITLE_TEXT[s.id] ?? '', sub: s.sub, badge: s.badge, footer: s.id === 'lock-in' ? FOOTER_LINES : null, pre: false };
+}
+
 export const MotivationalShowcase: React.FC = () => {
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
+  const { lang, translateTexts } = useLanguage();
+  const [shown, setShown] = useState<ShownSlide>(() => englishShown(SLIDES[0]));
 
   const go = useCallback((d: 1 | -1) => {
     setDir(d);
@@ -88,14 +131,48 @@ export const MotivationalShowcase: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [index, paused]);
 
-  const { lang } = useLanguage();
   const slide = SLIDES[index];
-  const loc = lang === 'hi' ? MOTIV_HI[slide.id] : undefined;
-  const kicker: string = loc?.kicker ?? slide.kicker;
-  const title: React.ReactNode = loc ? loc.title : slide.title;
-  const sub: string = loc?.sub ?? slide.sub;
-  const badge: string = loc?.badge ?? slide.badge;
-  const Icon = slide.icon;
+
+  // Translate-then-show: the box only ever displays content already in the
+  // selected language. While the next slide is being translated the current
+  // (already-translated) slide stays visible — never an English flash.
+  useEffect(() => {
+    let cancelled = false;
+    const s = SLIDES[index];
+    if (lang === 'en') {
+      setShown(englishShown(s));
+      return;
+    }
+    const hi = lang === 'hi' ? MOTIV_HI[s.id] : undefined;
+    if (hi) {
+      setShown({ id: s.id, kicker: hi.kicker, title: hi.title, sub: hi.sub, badge: hi.badge, footer: null, pre: true });
+      return;
+    }
+    const wantsFooter = s.id === 'lock-in';
+    const src = [s.kicker, TITLE_TEXT[s.id] ?? '', s.sub, s.badge, ...(wantsFooter ? FOOTER_LINES : [])];
+    translateTexts(src).then((out) => {
+      if (cancelled) return;
+      setShown({
+        id: s.id,
+        kicker: out[0] ?? src[0],
+        title: out[1] ?? src[1],
+        sub: out[2] ?? src[2],
+        badge: out[3] ?? src[3],
+        footer: wantsFooter ? out.slice(4) : null,
+        pre: true,
+      });
+    });
+    return () => { cancelled = true; };
+  }, [index, lang, translateTexts]);
+
+  // Always render the pre-translated `shown` slide (never the raw next slide),
+  // so the box cannot flash English while a translation is in flight.
+  const displaySlide = shown;
+  const kicker: string = displaySlide.kicker;
+  const loc = displaySlide.pre;
+  const sub: string = displaySlide.sub;
+  const badge: string = displaySlide.badge;
+  const Icon = SLIDES.find((s) => s.id === displaySlide.id)?.icon ?? slide.icon;
 
   return (
     <div
@@ -120,7 +197,7 @@ export const MotivationalShowcase: React.FC = () => {
 .cosmo-progress-bar { animation: cosmo-progress 5s linear forwards; }
 @media (prefers-reduced-motion: reduce) { .cosmo-swipe-r,.cosmo-swipe-l,.cosmo-progress-bar { animation: none !important; } }`}</style>
 
-      <div key={slide.id} className={dir === 1 ? 'cosmo-swipe-r' : 'cosmo-swipe-l'} aria-live="polite">
+      <div key={displaySlide.id + '-' + lang} data-translated={loc ? true : undefined} className={dir === 1 ? 'cosmo-swipe-r' : 'cosmo-swipe-l'} aria-live="polite">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-200 backdrop-blur">
             <Icon className="h-3.5 w-3.5" />
@@ -128,11 +205,17 @@ export const MotivationalShowcase: React.FC = () => {
           </span>
         </div>
         <h1 className="mt-3 max-w-xl font-display text-2xl font-bold leading-tight text-white sm:text-4xl">
-          {title}
+          {loc ? (
+            <span style={{ backgroundImage: 'linear-gradient(90deg, var(--cosmo-accent), var(--cosmo-accent2))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{displaySlide.title}</span>
+          ) : (
+            SLIDES.find((s) => s.id === displaySlide.id)?.title
+          )}
         </h1>
         <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-300">{sub}</p>
-        {!loc && slide.footer ? (
-          slide.footer
+        {displaySlide.footer ? (
+          <div className="mt-5 grid max-w-md grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-300">
+            {displaySlide.footer.map((f) => (<span key={f}>{f}</span>))}
+          </div>
         ) : (
           <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-200 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
