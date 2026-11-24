@@ -5,7 +5,7 @@ import { WORLD_LANGUAGES } from '../lib/languages';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) => {
-  const { lang, setLang, translating } = useLanguage();
+  const { lang, setLang, translating, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -43,8 +43,8 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
         onClick={() => { setOpen((o) => !o); setQ(''); }}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={'Choose language - current: ' + active.name}
-        title="Choose language"
+        aria-label={t('Choose language') + ' - ' + active.name}
+        title={t('Choose language')}
         className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 whitespace-nowrap sm:px-3 dark:border-white/[0.08] dark:bg-[#111827] dark:text-slate-200 dark:hover:bg-slate-800"
       >
         {translating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Globe className="h-3.5 w-3.5 text-indigo-500" />}
@@ -62,7 +62,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
             aria-label="World languages"
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">Choose language</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">{t('Choose language')}</span>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close languages" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10">
                 <X className="h-4 w-4" />
               </button>
@@ -73,7 +73,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search language… e.g. Hindi, Español, 中文"
+                placeholder={t('Search language… e.g. Hindi, Español, 中文')}
                 aria-label="Search languages"
                 className="w-full bg-transparent py-3 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-white"
               />
@@ -103,7 +103,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
               )}
             </div>
             <p className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-              Auto-translates whole app including motivations
+              {t('Auto-translates whole app including motivations')}
             </p>
           </div>
         </div>,
