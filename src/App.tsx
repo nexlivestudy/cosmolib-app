@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Clock,
   Flame,
@@ -447,10 +448,10 @@ export default function App() {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveModule(item.id)}
-                className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 whitespace-nowrap ${
+                className={`group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-150 whitespace-nowrap ${
                   active
-                    ? 'cosmo-nav-active bg-indigo-600 text-white'
-                    : 'text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:text-white'
+                    ? 'cosmo-nav-active cosmo-tab-active bg-indigo-600 text-white text-[15px] scale-[1.06]'
+                    : 'text-sm font-medium text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[0.05] dark:hover:text-white'
                 }`}
               >
                 <Icon
@@ -493,8 +494,8 @@ export default function App() {
       </aside>
 
       {/* Mobile Collapsible Nav Drawer */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
+      {mobileNavOpen && createPortal(
+        <div className="fixed inset-0 z-[99990] flex lg:hidden">
           <div
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
             onClick={() => setMobileNavOpen(false)}
@@ -528,10 +529,10 @@ export default function App() {
                       setActiveModule(item.id);
                       setMobileNavOpen(false);
                     }}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
+                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all ${
                       active
-                        ? 'cosmo-nav-active bg-indigo-600 text-white'
-                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.05]'
+                        ? 'cosmo-nav-active cosmo-tab-active bg-indigo-600 text-white text-[15px] font-bold scale-[1.06]'
+                        : 'text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.05]'
                     }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -564,7 +565,8 @@ export default function App() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Main Content Area */}
@@ -602,41 +604,45 @@ export default function App() {
               data-testid="topbar-global-search"
               className="w-full rounded-xl border border-slate-200 bg-slate-100/75 py-2 pl-9 pr-3 text-xs text-slate-900 transition-colors placeholder:text-slate-500 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-white/[0.08] dark:bg-[#111827]/90 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-indigo-400 dark:focus:bg-[#111827]"
             />
-            {searchOpen && globalSearch.trim().length > 0 && (
-              <div
-                data-testid="topbar-search-results"
-                className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-white/[0.1] dark:bg-[#111827]"
-              >
-                {searchResults.length === 0 ? (
-                  <p className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
-                    No matches for &ldquo;{globalSearch}&rdquo;.
-                  </p>
-                ) : (
-                  <ul className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                    {searchResults.map((res) => (
-                      <li key={res.id}>
-                        <button
-                          type="button"
-                          onClick={res.onSelect}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]"
-                        >
-                          <div className="min-w-0">
-                            <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">
-                              {res.label}
+            {searchOpen && globalSearch.trim().length > 0 && createPortal(
+              <div className="fixed inset-0 z-[99990]" role="presentation">
+                <div className="absolute inset-0 bg-transparent" onClick={() => setSearchOpen(false)} />
+                <div
+                  data-testid="topbar-search-results"
+                  className="absolute left-1/2 top-[68px] w-[min(90vw,28rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-white/[0.1] dark:bg-[#111827]"
+                >
+                  {searchResults.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                      No matches for &ldquo;{globalSearch}&rdquo;.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                      {searchResults.map((res) => (
+                        <li key={res.id}>
+                          <button
+                            type="button"
+                            onClick={res.onSelect}
+                            className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">
+                                {res.label}
+                              </div>
+                              <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                                {res.sub}
+                              </div>
                             </div>
-                            <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                              {res.sub}
-                            </div>
-                          </div>
-                          <span className="shrink-0 font-mono text-[10px] font-semibold text-indigo-600 dark:text-cyan-400">
-                            {res.kind}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                            <span className="shrink-0 font-mono text-[10px] font-semibold text-indigo-600 dark:text-cyan-400">
+                              {res.kind}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>,
+              document.body
             )}
           </div>
 
@@ -692,30 +698,34 @@ export default function App() {
               >
                 {userInitials}
               </button>
-              {avatarMenuOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-white/[0.1] dark:bg-[#111827]">
-                  <div className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                    {profile.displayName}
+              {avatarMenuOpen && createPortal(
+                <div className="fixed inset-0 z-[99990]" role="presentation">
+                  <div className="absolute inset-0 bg-transparent" onClick={() => setAvatarMenuOpen(false)} />
+                  <div className="absolute right-4 top-[68px] w-60 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl dark:border-white/[0.1] dark:bg-[#111827]">
+                    <div className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                      {profile.displayName}
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                      {profile.institution}
+                    </div>
+                    <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">
+                      {profile.branch} · {profile.countryCode}
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 font-mono text-xs tabular-nums dark:border-slate-800">
+                      <span className="text-amber-600 dark:text-amber-300">{profile.streakDays}d streak</span>
+                      <span className="text-cyan-700 dark:text-cyan-400">{profile.minutesStudiedToday}m today</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      Sign Out
+                    </button>
                   </div>
-                  <div className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                    {profile.institution}
-                  </div>
-                  <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">
-                    {profile.branch} · {profile.countryCode}
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 font-mono text-xs tabular-nums dark:border-slate-800">
-                    <span className="text-amber-600 dark:text-amber-300">{profile.streakDays}d streak</span>
-                    <span className="text-cyan-700 dark:text-cyan-400">{profile.minutesStudiedToday}m today</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Sign Out
-                  </button>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>
