@@ -1,13 +1,15 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_LANG, LANG_STORAGE_KEY, WORLD_LANGUAGES, getLanguageMeta } from '../lib/languages';
+import { CORE } from './dict';
 
 interface LangCtx {
   lang: string;
   setLang: (c: string) => void;
   translating: boolean;
+  t: (key: string) => string;
 }
 
-const Ctx = createContext<LangCtx>({ lang: DEFAULT_LANG, setLang: () => {}, translating: false });
+const Ctx = createContext<LangCtx>({ lang: DEFAULT_LANG, setLang: () => {}, translating: false, t: (k) => k });
 
 export const useLanguage = () => useContext(Ctx);
 
@@ -203,6 +205,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => { cancelled = true; observer?.disconnect(); };
   }, [lang]);
 
-  const val = useMemo(() => ({ lang, setLang, translating }), [lang, setLang, translating]);
+  const t = useCallback((key: string) => CORE[lang]?.[key] ?? key, [lang]);
+  const val = useMemo(() => ({ lang, setLang, translating, t }), [lang, setLang, translating, t]);
   return <Ctx.Provider value={val}>{children}</Ctx.Provider>;
 };
