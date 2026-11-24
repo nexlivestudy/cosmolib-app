@@ -22,6 +22,7 @@ import { FocusTimerModule } from './components/FocusTimerModule';
 import { GroupHubModule } from './components/GroupHubModule';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { OfflineIndicator, PWAInstallButton } from './components/PWAInstallButton';
+import { LanguageSelector } from './components/LanguageSelector';
 import { StudyFoldersModule } from './components/StudyFoldersModule';
 import { CosmolibLogoMark, WorkspaceSkeletonLoader } from './components/ui/CosmolibPrimitives';
 import { EXPLORE_STUDY_GROUPS, INITIAL_STUDY_FOLDERS } from './data/catalog';
@@ -641,6 +642,7 @@ export default function App() {
 
           {/* Right Zone: Streak + PWA + BYOK + Theme + Avatar */}
           <div className="flex items-center gap-2 shrink-0">
+            <LanguageSelector compact />
             <div
               data-testid="topbar-streak"
               title={`${profile.streakDays} day study streak`}
