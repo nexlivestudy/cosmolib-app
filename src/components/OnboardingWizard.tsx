@@ -16,7 +16,9 @@ import type {
   ThemeMode,
   UserProfile,
 } from '../types';
+import { AnimatedBackground } from './AnimatedBackground';
 import { sanitizeUserText } from '../utils/security';
+import { useTheme } from '../hooks/useTheme';
 import { buildMatchedGroups } from '../utils/studyLogic';
 
 interface OnboardingWizardProps {
@@ -65,6 +67,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [dailyTarget, setDailyTarget] = useState<DailyTargetHours>(4);
   const [vibe, setVibe] = useState<StudyVibe>('night_cook');
   const [streamCategory, setStreamCategory] = useState<StreamCategory>(initialStream);
+  const { cosmoThemeId } = useTheme();
   const [degreeLevel, setDegreeLevel] = useState(initialDegree);
   const [branch, setBranch] = useState(initialBranches[0] ?? CUSTOM_OPTION);
   const [customBranch, setCustomBranch] = useState('');
@@ -185,7 +188,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 dark:bg-[#0B0F19] dark:text-slate-100">
+    <div className="relative min-h-screen bg-transparent text-slate-900 transition-colors dark:text-slate-100">
+      <AnimatedBackground themeId={cosmoThemeId} />
       <header className="mx-auto flex max-w-4xl items-center justify-between gap-6 px-6 py-5">
         <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
           COSMOLIB
