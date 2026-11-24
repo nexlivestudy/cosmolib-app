@@ -97,6 +97,40 @@
   box-shadow: 0 8px 24px -6px rgba(79, 70, 229, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
+/* ===== Global selected-tab / selected-option emphasis (always a bit bigger) =====
+   Active tabs/options scale up slightly so selection is obvious everywhere.
+   Applied alongside existing active colors — do not remove the color classes. */
+.cosmo-tab-active {
+  transform: scale(1.06);
+  transform-origin: left center;
+  font-weight: 700;
+  z-index: 1;
+}
+.cosmo-tab-active-center {
+  transform-origin: center center;
+}
+.cosmo-select-active {
+  transform: scale(1.03);
+  transform-origin: left center;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmo-tab-active,
+  .cosmo-select-active {
+    transform: none;
+  }
+}
+
+/* ===== Global popover layering (options always in front of tabs) =====
+   All dropdown/popover panels render via portal at z >= 99990,
+   above sticky headers (z-30), cards, tab bars and overlays. */
+.cosmo-popover-layer {
+  z-index: 99990;
+}
+.cosmo-popover-topmost {
+  z-index: 99999;
+}
+
 @keyframes cosmoShimmer {
   0% {
     background-position: -200% 0;
