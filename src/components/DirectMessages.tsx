@@ -14,6 +14,7 @@ interface DMProps {
 export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerChange }) => {
   const [convos, setConvos] = useState<ConversationPreview[]>([]);
   const [loadingConvos, setLoadingConvos] = useState(false);
+  const [liveFeed, setLiveFeed] = useState(true);
   const refresh = async () => {
     setLoadingConvos(true);
     try {
@@ -24,8 +25,14 @@ export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerCh
   useEffect(() => { void refresh(); }, [myId]);
   useEffect(() => {
     if (!supabase || !myId) return;
-    const ch = supabase.channel(`dm-${myId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, () => { void refresh(); }).subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    let subActive = true;
+    const ch = supabase.channel(`dm-${myId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, () => { if (subActive) void refresh(); }).subscribe((status) => {
+      if (subActive) setLiveFeed(status === 'SUBSCRIBED');
+    });
+    const poll = window.setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, 6000);
+    return () => { subActive = false; window.clearInterval(poll); void supabase.removeChannel(ch); };
   }, [myId]);
   if (!peer) {
     return (
