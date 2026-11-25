@@ -159,6 +159,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   };
 
   const handleFinish = () => {
+    if (!selectedCountry || dailyTarget === null || !vibe || !streamCategory) return;
     const joined = [
       universityBranchGroup.id,
       ...(joinGlobal ? [globalBranchGroup.id] : []),
@@ -282,7 +283,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 Where are you studying from?
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                Auto-detected <strong className="text-slate-900 dark:text-white">{detected.name}</strong> from your local timezone. Adjust your display name or pick any country below.
+                Pick your country below{selectedCountry ? (<> - <strong className="text-slate-900 dark:text-white">{selectedCountry.name}</strong> selected</>) : (<> - detected near you: <strong className="text-slate-900 dark:text-white">{detected.name}</strong> (tap to select)</>)}
               </p>
 
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -683,7 +684,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             {step < 5 ? (
               <button
                 type="button"
-                disabled={(step === 4 && !isStep4Valid) || (step === 1 && !isStep1Valid)}
+                disabled={
+          (step === 4 && !isStep4Valid) ||
+          (step === 3 && !isStep3Valid) ||
+          (step === 2 && !isStep2Valid) ||
+          (step === 1 && !isStep1Valid)
+        }
                 onClick={() => setStep((s) => Math.min(5, s + 1))}
                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-45"
               >
