@@ -5,7 +5,25 @@ export type ActiveModule =
   | 'folders'
   | 'panic'
   | 'focus'
-  | 'groups';
+  | 'groups'
+  | 'live';
+
+export interface LiveRoom {
+  id: string;
+  name: string;
+  topic: string;
+  scheduledAt: string;
+  createdBy: string;
+  isLive: boolean;
+}
+
+export interface LiveChatMsg {
+  id: string;
+  author: string;
+  text: string;
+  isBot: boolean;
+  createdAt: string;
+}
 
 export type StreamCategory =
   | 'School / Entrance Boards'
@@ -18,7 +36,7 @@ export type DailyTargetHours = 2 | 4 | 6 | 8;
 
 export type StudyVibe = 'night_cook' | 'early_bird';
 
-export interface UserProfile {
+export interface StudyFolder {
   id: string;
   email: string;
   displayName: string;
