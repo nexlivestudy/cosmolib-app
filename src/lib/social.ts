@@ -700,3 +700,76 @@ export function loadCachedGroupFiles(groupId: string): import('../types').GroupR
   const list = readJson<import('../types').GroupResourceItem[]>(groupFilesCacheKey(groupId), []);
   return Array.isArray(list) ? list : [];
 }
+
+export function saveCachedGroupFiles(groupId: string, files: import('../types').GroupResourceItem[]): void {
+  writeJson(groupFilesCacheKey(groupId), files.slice(0, 60));
+}
+
+export type GroupDaySection =
+  | { kind: 'day'; key: string; label: string }
+  | { kind: 'msg'; key: string; msg: import('../types').GroupMessage };
+
+export function sectionGroupByDay(msgs: import('../types').GroupMessage[]): GroupDaySection[] {
+  const out: GroupDaySection[] = [];
+  let lastDay = '';
+  for (const m of msgs) {
+    const day = (m.created_at || '').slice(0, 10);
+    if (day && day !== lastDay) {
+      lastDay = day;
+      out.push({ kind: 'day', key: `gday-${day}`, label: dayLabel(m.created_at) });
+    }
+    out.push({ kind: 'msg', key: m.id, msg: m });
+  }
+  return out;
+}
+
+export function groupThreadDays(msgs: import('../types').GroupMessage[]): { day: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const m of msgs) {
+    const day = (m.created_at || '').slice(0, 10);
+    if (day && !seen.has(day)) seen.set(day, dayLabel(m.created_at));
+  }
+  return [...seen.entries()].map(([day, label]) => ({ day, label }));
+}
+
+export async function listGroupMessagesSince(
+  groupId: string,
+  sinceIso: string | null
+): Promise<import('../types').GroupMessage[]> {
+  if (!supabase || !groupId) return [];
+  try {
+    let q = supabase
+      .from('group_messages')
+      .select('*')
+      .eq('group_id', groupId)
+      .order('created_at', { ascending: true })
+      .limit(80);
+    if (sinceIso) q = q.gt('created_at', sinceIso);
+    const { data, error } = await q;
+    if (error || !Array.isArray(data)) return [];
+    return data as import('../types').GroupMessage[];
+  } catch {
+    return [];
+  }
+}
+
+export async function listGroupFilesSince(
+  groupId: string,
+  sinceIso: string | null
+): Promise<import('../types').GroupResourceItem[]> {
+  if (!supabase || !groupId) return [];
+  try {
+    let q = supabase
+      .from('group_resources')
+      .select('*')
+      .eq('group_id', groupId)
+      .order('created_at', { ascending: false })
+      .limit(40);
+    if (sinceIso) q = q.gt('created_at', sinceIso);
+    const { data, error } = await q;
+    if (error || !Array.isArray(data)) return [];
+    return data as import('../types').GroupResourceItem[];
+  } catch {
+    return [];
+  }
+}
