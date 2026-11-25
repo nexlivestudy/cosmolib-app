@@ -49,6 +49,7 @@ import { MeditationStrictOverlay } from './schedule/MeditationStrictOverlay';
 import { NotificationFilterPanel } from './schedule/NotificationFilterPanel';
 import { RegainAlarmOverlay } from './schedule/RegainAlarmOverlay';
 import { EmptyStateCard } from './ui/CosmolibPrimitives';
+import { CosmoSelect } from './ui/CosmoSelect';
 
 interface FocusTimerModuleProps {
   userId?: string;
@@ -1449,22 +1450,23 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
                   <Coffee className="h-3.5 w-3.5 text-emerald-500" />
                   Pomodoro 5m Break
                 </label>
-                <select
+                <CosmoSelect
                   id="strict-pomodoro-cadence"
-                  value={strictSettings.pomodoroBreakEveryMins}
-                  onChange={(e) =>
+                  value={String(strictSettings.pomodoroBreakEveryMins)}
+                  onChange={(v) =>
                     setStrictSettings((prev) => ({
                       ...prev,
-                      pomodoroBreakEveryMins: Number(e.target.value),
+                      pomodoroBreakEveryMins: Number(v),
                     }))
                   }
-                  className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#111827] dark:text-white"
-                >
-                  <option value={25}>Every 25 min</option>
-                  <option value={30}>Every 30 min</option>
-                  <option value={50}>Every 50 min</option>
-                  <option value={90}>Every 90 min</option>
-                </select>
+                  ariaLabel="Pomodoro break cadence"
+                  options={[
+                    { value: '25', label: 'Every 25 min' },
+                    { value: '30', label: 'Every 30 min' },
+                    { value: '50', label: 'Every 50 min' },
+                    { value: '90', label: 'Every 90 min' },
+                  ]}
+                />
               </div>
             </div>
           </div>
