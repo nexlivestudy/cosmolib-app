@@ -91,6 +91,13 @@ export async function generateExamPanicPack(
   return postAI('/api/ai/exam-panic', params, byok);
 }
 
+export async function askRoomAssistant(
+  params: { question: string; roomTopic?: string; history?: string[] },
+  byok: BYOKConfig
+): Promise<{ answer: string }> {
+  return postAI('/api/ai/room-assistant', params, byok);
+}
+
 export async function gradeWrittenAnswer(
   params: {
     subject: string;
