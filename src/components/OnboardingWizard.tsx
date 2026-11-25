@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Globe, Moon, Search, Sun, Users } from 'lucide-react';
 import {
+  type CountryOption,
   detectUserCountry,
   EXPLORE_STUDY_GROUPS,
   getBranchesForDegree,
@@ -65,15 +66,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
   const [displayName, setDisplayName] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState(detected);
-  const [dailyTarget, setDailyTarget] = useState<DailyTargetHours>(4);
-  const [vibe, setVibe] = useState<StudyVibe>('night_cook');
-  const [streamCategory, setStreamCategory] = useState<StreamCategory>(initialStream);
+  const [selectedCountry, setSelectedCountry] = useState<CountryOption | null>(null);
+  const [dailyTarget, setDailyTarget] = useState<DailyTargetHours | null>(null);
+  const [vibe, setVibe] = useState<StudyVibe | null>(null);
+  const [streamCategory, setStreamCategory] = useState<StreamCategory | null>(null);
   const { cosmoThemeId } = useTheme();
-  const [degreeLevel, setDegreeLevel] = useState(initialDegree);
-  const [branch, setBranch] = useState(initialBranches[0] ?? CUSTOM_OPTION);
+  const [degreeLevel, setDegreeLevel] = useState('');
+  const [branch, setBranch] = useState('');
   const [customBranch, setCustomBranch] = useState('');
-  const [institution, setInstitution] = useState(initialInstitutions[0] ?? CUSTOM_OPTION);
+  const [institution, setInstitution] = useState('');
   const [customInstitution, setCustomInstitution] = useState('');
   const [joinGlobal, setJoinGlobal] = useState(true);
   const [extraGroupIds, setExtraGroupIds] = useState<string[]>([]);
