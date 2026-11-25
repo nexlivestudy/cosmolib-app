@@ -523,3 +523,82 @@ export async function flushOutbox(ownerId: string): Promise<number> {
   }
   return loadOutbox(ownerId).length;
 }
+
+export function loadCachedThread(ownerId: string, peerId: string): DirectMessage[] {
+  const list = readJson<DirectMessage[]>(cacheKey(ownerId, peerId), []);
+  return Array.isArray(list) ? list : [];
+}
+
+export function saveCachedThread(ownerId: string, peerId: string, msgs: DirectMessage[]): void {
+  writeJson(cacheKey(ownerId, peerId), msgs.slice(-200));
+}
+
+export function loadCachedConvos(ownerId: string): ConversationPreview[] {
+  const list = readJson<ConversationPreview[]>(convoCacheKey(ownerId), []);
+  return Array.isArray(list) ? list : [];
+}
+
+export function saveCachedConvos(ownerId: string, convos: ConversationPreview[]): void {
+  writeJson(convoCacheKey(ownerId), convos.slice(0, 60));
+}
+
+export type DaySection =
+  | { kind: 'day'; key: string; label: string }
+  | { kind: 'msg'; key: string; msg: DirectMessage };
+
+export function dayLabel(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const today = new Date();
+    const yest = new Date();
+    yest.setDate(today.getDate() - 1);
+    const sameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    if (sameDay(d, today)) return 'Today';
+    if (sameDay(d, yest)) return 'Yesterday';
+    return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: d.getFullYear() === today.getFullYear() ? undefined : 'numeric' });
+  } catch {
+    return '';
+  }
+}
+
+export function sectionByDay(msgs: DirectMessage[]): DaySection[] {
+  const out: DaySection[] = [];
+  let lastDay = '';
+  for (const m of msgs) {
+    const day = (m.created_at || '').slice(0, 10);
+    if (day && day !== lastDay) {
+      lastDay = day;
+      out.push({ kind: 'day', key: `day-${day}`, label: dayLabel(m.created_at) });
+    }
+    out.push({ kind: 'msg', key: m.id, msg: m });
+  }
+  return out;
+}
+
+export function threadDays(msgs: DirectMessage[]): { day: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const m of msgs) {
+    const day = (m.created_at || '').slice(0, 10);
+    if (day && !seen.has(day)) seen.set(day, dayLabel(m.created_at));
+  }
+  return [...seen.entries()].map(([day, label]) => ({ day, label }));
+}
+
+export async function listDMsSince(myId: string, peerId: string, sinceIso: string | null): Promise<DirectMessage[]> {
+  if (!supabase || !myId || !peerId) return [];
+  try {
+    let q = supabase
+      .from('direct_messages')
+      .select('*')
+      .or(`and(sender_id.eq.${myId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${myId})`)
+      .order('created_at', { ascending: true })
+      .limit(60);
+    if (sinceIso) q = q.gt('created_at', sinceIso);
+    const { data, error } = await q;
+    if (error || !Array.isArray(data)) return [];
+    return data as DirectMessage[];
+  } catch {
+    return [];
+  }
+}
