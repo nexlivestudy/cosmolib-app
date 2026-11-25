@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Eraser, Mic, MicOff, Palette, Plus, Trash2, Video, VideoOff } from 'lucide-react';
+import { CheckCheck, Eraser, Mic, MicOff, Palette, Plus, Reply, Square, Trash2, Video, VideoOff } from 'lucide-react';
 import { askRoomAssistant } from '../lib/aiClient';
 import { supabase } from '../lib/supabase';
 import type { BYOKConfig, LiveChatMsg, LiveRoom, UserProfile } from '../types';
@@ -48,6 +48,17 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
   const [chat, setChat] = useState<LiveChatMsg[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [botBusy, setBotBusy] = useState(false);
+  // WhatsApp-style extras for private rooms (mic + voice notes allowed ONLY here)
+  const [replyToId, setReplyToId] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
+  const [myReactions, setMyReactions] = useState<Record<string, string>>({});
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [onlineMembers, setOnlineMembers] = useState<string[]>([]);
+  const [recording, setRecording] = useState(false);
+  const [recordSecs, setRecordSecs] = useState(0);
+  const recorderRef = useRef<any>(null);
+  const recordTimer = useRef<number | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   // Whiteboard + notepad
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
