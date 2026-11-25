@@ -603,7 +603,11 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                 {currentGroup?.name}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Live Cohort Chat · Supabase Realtime (group_messages)
+                Live Cohort Chat · Supabase Realtime · {Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length) + 1} online
+              </p>
+              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                <MicOff className="h-3 w-3" />
+                Mic stays off in university + global rooms - talk in a private Live Room.
               </p>
             </div>
             <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-amber-600 tabular-nums dark:text-amber-400">
@@ -615,6 +619,10 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           <div className="flex-1 space-y-3 overflow-y-auto p-5">
             {messages.map((msg) => {
               const mine = msg.user_id === profile.id;
+              const linkId = replyLinks[msg.id] || msg.replyToId;
+              const quoted = linkId ? messages.find((m) => m.id === linkId) : undefined;
+              const msgReacts = reactions[msg.id] || {};
+              const seenBy = Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length);
               return (
                 <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                   <div
@@ -632,10 +640,51 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                       <span>{msg.author_name}</span>
                       <span aria-hidden="true">·</span>
                       <span className="font-mono tabular-nums">{msg.author_streak}d streak</span>
+                      <span className="ml-auto font-mono font-normal tabular-nums opacity-80">
+                        {formatChatTime(msg.created_at)}
+                      </span>
                     </div>
+                    {quoted && (
+                      <div className={`mt-1.5 truncate rounded-md border-l-2 px-2 py-1 text-xs italic ${mine ? 'border-indigo-200 bg-indigo-700/60' : 'border-cyan-500 bg-slate-100 dark:bg-slate-800/70'}`}>
+                        Replying to {quoted.author_name}: {quoted.content.slice(0, 90)}
+                      </div>
+                    )}
                     <p className="mt-1 whitespace-pre-wrap break-words leading-relaxed">
                       {msg.content}
                     </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      {['👍', '❤', '😂'].map((emoji) => {
+                        const count = msgReacts[emoji] || 0;
+                        const active = myReactions[msg.id] === emoji;
+                        return (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => toggleReaction(msg.id, emoji)}
+                            title={active ? 'Remove reaction' : 'React'}
+                            className={`rounded-full px-1.5 py-0.5 text-xs leading-none transition-all ${active ? 'bg-white/25 scale-110 shadow' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
+                          >
+                            {emoji}
+                            {count > 0 && <span className="ml-0.5 font-mono tabular-nums">{count}</span>}
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => setReplyToId(msg.id)}
+                        title="Reply"
+                        aria-label={`Reply to ${msg.author_name}`}
+                        className="ml-1 rounded-full p-1 opacity-60 transition-all hover:opacity-100 hover:scale-110"
+                      >
+                        <Reply className="h-3.5 w-3.5" />
+                      </button>
+                      {mine && (
+                        <span className="ml-auto inline-flex items-center gap-0.5 text-[10px] opacity-80" title={`Seen by ${seenBy} members online now`}>
+                          <CheckCheck className="h-3 w-3" />
+                          {seenBy > 0 ? seenBy : ''}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -647,6 +696,24 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             )}
           </div>
 
+          {replyToId && (() => {
+            const target = messages.find((m) => m.id === replyToId);
+            return (
+              <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-3.5 py-2 text-xs dark:border-slate-800 dark:bg-slate-800/50">
+                <span className="truncate text-slate-600 dark:text-slate-300">
+                  Replying to {target ? `${target.author_name}: ${target.content.slice(0, 80)}` : 'message'}...
+                </span>
+                <button type="button" onClick={() => setReplyToId(null)} aria-label="Cancel reply" className="rounded p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            );
+          })()}
+          {typingUsers.length > 0 && (
+            <div className="border-t border-slate-200 px-3.5 pt-1.5 text-[11px] italic text-slate-500 dark:border-slate-800 dark:text-slate-400">
+              {typingUsers.slice(0, 2).join(', ')}{typingUsers.length > 2 ? ` +${typingUsers.length - 2}` : ''} typing...
+            </div>
+          )}
           <form
             onSubmit={handleSendMessage}
             className="flex items-center gap-2 border-t border-slate-200 p-3.5 dark:border-slate-800"
@@ -654,7 +721,18 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             <input
               type="text"
               value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
+              onChange={(e) => {
+                setMessageInput(e.target.value);
+                try {
+                  (channelRef.current as unknown as { send: (m: object) => void } | null)?.send({
+                    type: 'broadcast',
+                    event: 'typing',
+                    payload: { name: profile.displayName },
+                  });
+                } catch {
+                  /* typing indicator best-effort */
+                }
+              }}
               placeholder="Share a doubt, formula, or focus check-in..."
               aria-label="Message group chat"
               className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
