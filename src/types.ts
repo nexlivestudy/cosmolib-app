@@ -6,7 +6,8 @@ export type ActiveModule =
   | 'panic'
   | 'focus'
   | 'groups'
-  | 'live';
+  | 'live'
+  | 'profile';
 
 export interface LiveRoom {
   id: string;
