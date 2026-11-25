@@ -506,6 +506,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <NotificationsBell userId={profile.id} userName={profile.displayName} onChanged={() => void loadMembers(false)} />
           <button
             type="button"
             onClick={() => setCamDrawerOpen((o) => !o)}
