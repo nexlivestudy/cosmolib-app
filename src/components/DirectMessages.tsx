@@ -15,14 +15,32 @@ export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerCh
   const [convos, setConvos] = useState<ConversationPreview[]>([]);
   const [loadingConvos, setLoadingConvos] = useState(false);
   const [liveFeed, setLiveFeed] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
   const refresh = async () => {
-    setLoadingConvos(true);
+    const cached = loadCachedConvos(myId);
+    if (cached.length > 0) setConvos(cached);
+    else setLoadingConvos(true);
     try {
       const list = await listConversations(myId, myName);
-      setConvos(list);
+      if (list.length > 0 || cached.length === 0) {
+        setConvos(list);
+        saveCachedConvos(myId, list);
+      }
     } finally { setLoadingConvos(false); }
   };
   useEffect(() => { void refresh(); }, [myId]);
+  useEffect(() => {
+    if (!myId) return;
+    setPendingCount(loadOutbox(myId).length);
+    const flush = async () => {
+      const left = await flushOutbox(myId);
+      setPendingCount(left);
+      if (left === 0) void refresh();
+    };
+    void flush();
+    window.addEventListener('online', flush);
+    return () => window.removeEventListener('online', flush);
+  }, [myId]);
   useEffect(() => {
     if (!supabase || !myId) return;
     let subActive = true;
