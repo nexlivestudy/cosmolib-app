@@ -165,13 +165,30 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
     return () => { subActive = false; window.clearInterval(poll); void supabase.removeChannel(ch); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myId, peer.id, convoId]);
+  const msgsRef = useRef<DirectMessage[]>(msgs);
+  msgsRef.current = msgs;
   const send = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const text = input.trim();
+    const text = input.trim().slice(0, 1000);
     if (!text) return;
     setInput('');
+    setSendError(null);
+    if (!navigator.onLine) {
+      const q = queueOfflineMessage(myId, peer.id, text);
+      if (q) setQueued((prev) => [...prev, q]);
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }));
+      return;
+    }
     const sent = await sendDM(myId, peer.id, text);
-    if (sent) setMsgs((prev) => (prev.some((x) => x.id === sent.id) ? prev : [...prev, sent]));
+    if (sent) {
+      setMsgs((prev) => (prev.some((x) => x.id === sent.id) ? prev : [...prev, sent]));
+      saveCachedThread(myId, peer.id, [...msgsRef.current, sent]);
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }));
+    } else {
+      const q = queueOfflineMessage(myId, peer.id, text);
+      if (q) setQueued((prev) => [...prev, q]);
+      setSendError('Could not send - kept as Pending, will deliver automatically.');
+    }
   };
   const toggleReact = (msgId: string, emoji: string) => {
     setMyReacts((prev) => {
