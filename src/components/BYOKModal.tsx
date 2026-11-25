@@ -13,14 +13,14 @@ const PROVIDERS: { id: BYOKProvider; label: string; subtitle: string; defaultMod
   {
     id: 'default',
     label: 'COSMOLIB Built-in Engine',
-    subtitle: 'Zero-config server-side Gemini 3.8 Flash (recommended)',
-    defaultModel: 'gemini-3.8-flash',
+    subtitle: 'Zero-config server-side Gemini 2.5 Flash (recommended)',
+    defaultModel: 'gemini-2.5-flash',
   },
   {
     id: 'gemini',
     label: 'Google AI Studio (BYOK)',
     subtitle: 'Use your own personal Google AI Studio key for unlimited usage',
-    defaultModel: 'gemini-3.8-flash',
+    defaultModel: 'gemini-2.5-flash',
   },
   {
     id: 'groq',
@@ -32,7 +32,7 @@ const PROVIDERS: { id: BYOKProvider; label: string; subtitle: string; defaultMod
     id: 'openrouter',
     label: 'OpenRouter (BYOK)',
     subtitle: 'Route to any OpenRouter free or custom study model',
-    defaultModel: 'google/gemini-3.8-flash',
+    defaultModel: 'google/gemini-2.5-flash',
   },
 ];
 
