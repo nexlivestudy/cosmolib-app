@@ -865,44 +865,16 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             </div>
           </div>
 
-          {/* 1-to-1 Study Buddy Follow (buddy_follows) with 3-hour Cooldown */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#111827]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">
-                  1-to-1 Study Buddies
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  3-hour cooldown per alert · Suppressed in Ultra Block
-                </p>
-              </div>
+            <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">About this group</h2>
+            <p className="mt-1 line-clamp-3 text-xs text-slate-600 dark:text-slate-400">{currentGroup?.description || 'A focused study room for this cohort.'}</p>
+            <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <span>{members.length} members joined</span>
+              <button type="button" onClick={() => { setMembersOpen(true); void loadMembers(); }} className="font-semibold text-indigo-600 hover:underline dark:text-cyan-400">View all</button>
             </div>
-
-            {(false as boolean) && buddyNotice && (
-              <p role="status" className="mt-2.5 text-xs font-medium text-cyan-700 dark:text-cyan-400">
-                {buddyNotice}
-              </p>
-            )}
-
-            <div className="mt-3 divide-y divide-slate-200 dark:divide-slate-800">
-              {(members.length === 0 && !membersLoading) && (
-                <p className="py-5 text-center text-xs text-slate-500 dark:text-slate-400">No members yet. Share this group to invite peers.</p>
-              )}
-              {members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between gap-3 py-3">
-                  <button type="button" onClick={() => setMembersOpen(true)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
-                    <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-xs font-bold text-white">
-                      {m.name.slice(0, 2).toUpperCase()}
-                      <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-[#111827] ${m.online ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">{m.name}</span>
-                      <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">{m.online ? 'Live now' : (m.lastSeen ? 'last seen ' + m.lastSeen.slice(0, 16).replace('T', ' ') : 'new here')}</span>
-                    </span>
-                  </button>
-                </div>
-              ))}
-            </div>
+            <button type="button" onClick={() => setActiveTab('messages')} className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-500">
+              <MessageCircle className="h-3.5 w-3.5" /> Open Messages
+            </button>
           </div>
         </aside>
       </div>
