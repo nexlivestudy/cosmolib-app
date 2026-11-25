@@ -3,17 +3,20 @@ import {
   Bell,
   Camera,
   CameraOff,
+  CheckCheck,
   Download,
   EyeOff,
   FileText,
   Flame,
   MicOff,
   PictureInPicture2,
+  Reply,
   Send,
   Upload,
   UserCheck,
   UserPlus,
   Video,
+  X,
 } from 'lucide-react';
 import { INITIAL_STUDY_BUDDIES } from '../data/catalog';
 import { NEXLIVE_STORAGE_BUCKET, supabase } from '../lib/supabase';
@@ -59,6 +62,14 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [resources, setResources] = useState<GroupResourceItem[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  // WhatsApp-style extras: replies, reactions, typing (mic stays OFF in shared rooms)
+  const [replyToId, setReplyToId] = useState<string | null>(null);
+  const [replyLinks, setReplyLinks] = useState<Record<string, string>>({});
+  const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
+  const [myReactions, setMyReactions] = useState<Record<string, string>>({});
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const channelRef = useRef<any>(null);
+
   const [resourceCategory, setResourceCategory] =
     useState<GroupResourceItem['category']>('PDF Notes');
   const [uploadingVault, setUploadingVault] = useState(false);
@@ -153,6 +164,42 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           );
         }
       )
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        const name = String((payload as { name?: string }).name || '');
+        if (name && name !== profile.displayName) {
+          setTypingUsers((prev) => (prev.includes(name) ? prev : [...prev, name]));
+          window.setTimeout(() => {
+            setTypingUsers((prev) => prev.filter((n) => n !== name));
+          }, 2500);
+        }
+      })
+      .on('broadcast', { event: 'reaction' }, ({ payload }) => {
+        const p = payload as { msgId?: string; emoji?: string };
+        if (!p.msgId || !p.emoji) return;
+        setReactions((prev) => ({
+          ...prev,
+          [p.msgId as string]: {
+            ...(prev[p.msgId as string] || {}),
+            [p.emoji as string]: ((prev[p.msgId as string] || {})[p.emoji as string] || 0) + 1,
+          },
+        }));
+      })
+      .on('broadcast', { event: 'reaction-remove' }, ({ payload }) => {
+        const p = payload as { msgId?: string; emoji?: string };
+        if (!p.msgId || !p.emoji) return;
+        setReactions((prev) => ({
+          ...prev,
+          [p.msgId as string]: {
+            ...(prev[p.msgId as string] || {}),
+            [p.emoji as string]: Math.max(0, ((prev[p.msgId as string] || {})[p.emoji as string] || 1) - 1),
+          },
+        }));
+      })
+      .on('broadcast', { event: 'replylink' }, ({ payload }) => {
+        const p = payload as { msgId?: string; replyToId?: string };
+        if (!p.msgId || !p.replyToId) return;
+        setReplyLinks((prev) => ({ ...prev, [p.msgId as string]: p.replyToId as string }));
+      })
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState<PresencePeer>();
         const list: PresencePeer[] = [];
@@ -172,8 +219,11 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
         }
       });
 
+    channelRef.current = channel;
+
     return () => {
       cancelled = true;
+      channelRef.current = null;
       void sb.removeChannel(channel);
     };
   }, [currentGroup?.id, profile.id, profile.displayName, camActive]);
