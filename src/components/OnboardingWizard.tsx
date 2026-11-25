@@ -134,27 +134,21 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   );
 
   const handleSelectStream = (cat: StreamCategory) => {
-    const nextDegrees = getDegreeLevelsForStream(cat);
-    const nextDegree = nextDegrees[0] ?? '';
-    const nextBranches = getBranchesForDegree(cat, nextDegree);
-    const nextInstitutions = getInstitutionsForDegree(cat, nextDegree);
-
+    // Switching stream clears every downstream pick - nothing auto-fills.
     setStreamCategory(cat);
-    setDegreeLevel(nextDegree);
-    setBranch(nextBranches[0] ?? CUSTOM_OPTION);
+    setDegreeLevel('');
+    setBranch('');
     setCustomBranch('');
-    setInstitution(nextInstitutions[0] ?? CUSTOM_OPTION);
+    setInstitution('');
     setCustomInstitution('');
   };
 
   const handleSelectDegree = (nextDegree: string) => {
-    const nextBranches = getBranchesForDegree(streamCategory, nextDegree);
-    const nextInstitutions = getInstitutionsForDegree(streamCategory, nextDegree);
-
+    if (!streamCategory) return;
     setDegreeLevel(nextDegree);
-    setBranch(nextBranches[0] ?? CUSTOM_OPTION);
+    setBranch('');
     setCustomBranch('');
-    setInstitution(nextInstitutions[0] ?? CUSTOM_OPTION);
+    setInstitution('');
     setCustomInstitution('');
   };
 
@@ -329,7 +323,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
               <div className="mt-4 grid max-h-64 grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
                 {filteredCountries.map((c) => {
-                  const active = selectedCountry.code === c.code;
+                  const active = selectedCountry?.code === c.code;
                   return (
                     <button
                       key={c.code}
