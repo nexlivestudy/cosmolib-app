@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Strictly read from environment variables only — never hardcode keys or use service_role
+// Strictly read from environment variables only
 const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
@@ -19,7 +19,7 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured()
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: false,
+        detectSessionInUrl: true,
       },
       realtime: {
         params: {
