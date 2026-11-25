@@ -23,6 +23,9 @@ export interface LiveChatMsg {
   text: string;
   isBot: boolean;
   createdAt: string;
+  replyToId?: string;
+  audioUrl?: string;
+  audioSecs?: number;
 }
 
 export type StreamCategory =
@@ -197,6 +200,7 @@ export interface GroupMessage {
   author_streak: number;
   content: string;
   created_at: string;
+  replyToId?: string;
 }
 
 export interface GroupResourceItem {
