@@ -44,6 +44,7 @@ export const ProfileScreen: React.FC<Props> = ({
   canMessageWith,
   onClose,
   onProfileChanged,
+  asPage,
 }) => {
   const isMine = userId === me.id;
   const [pub, setPub] = useState<PublicProfile | null>(null);
