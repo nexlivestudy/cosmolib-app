@@ -431,3 +431,43 @@ export async function withdrawFollowRequest(
     return { ok: false, error: err instanceof Error ? err.message : 'Cancel failed.' };
   }
 }
+
+/* Offline-first DM layer (free: outbox + cache, no new services) */
+export interface QueuedMessage {
+  clientId: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  createdAt: string;
+  attempts: number;
+}
+
+function outboxKey(ownerId: string): string {
+  return `cosmolib_dm_outbox_${ownerId}`;
+}
+
+function cacheKey(ownerId: string, peerId: string): string {
+  return `cosmolib_dm_cache_${ownerId}_${peerId}`;
+}
+
+function convoCacheKey(ownerId: string): string {
+  return `cosmolib_dm_convos_${ownerId}`;
+}
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage full/blocked - cache is best-effort */
+  }
+}
