@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Clock, UserCheck, UserPlus, X } from 'lucide-react';
 import type { FollowStatus, RoomMember } from '../types';
-import { getFollowStatus, removeFollow, sendFollowRequest, timeAgo } from '../lib/social';
+import { getFollowStatus, removeFollow, sendFollowRequestEx, timeAgo, withdrawFollowRequest } from '../lib/social';
 
 interface FollowButtonProps {
   myId: string;
@@ -20,25 +20,46 @@ export const FollowButton: React.FC<FollowButtonProps> = ({ myId, myName, peerId
     getFollowStatus(myId, peerId).then((s) => { if (live) setState(s); });
     return () => { live = false; };
   }, [myId, peerId]);
+  const [err, setErr] = useState<string | null>(null);
+  const refresh = async () => {
+    try {
+      const s = await getFollowStatus(myId, peerId);
+      setState(s);
+    } catch { /* keep last known state */ }
+  };
   const act = async () => {
     if (busy || myId === peerId) return;
     setBusy(true);
+    setErr(null);
     try {
       if (state === 'none' || state === 'followback') {
-        const ok = await sendFollowRequest(myId, myName, peerId);
-        if (ok) setState(state === 'none' ? 'requested' : 'mutual');
-      } else if (state === 'requested' || state === 'following' || state === 'mutual') {
+        const res = await sendFollowRequestEx(myId, myName, peerId);
+        if (res.ok) {
+          setState(res.state);
+        } else {
+          setErr(res.error || 'Request failed.');
+          await refresh();
+        }
+      } else if (state === 'requested') {
+        const res = await withdrawFollowRequest(myId, peerId);
+        if (res.ok) setState('none');
+        else setErr(res.error || 'Cancel failed.');
+      } else {
         const ok = await removeFollow(myId, peerId);
         if (ok) { setState('none'); onAccepted?.(); }
+        else setErr('Unfollow failed. Try again.');
       }
     } finally { setBusy(false); }
   };
   const label = state === 'requested' ? 'Requested' : state === 'following' ? 'Following' : state === 'mutual' ? 'Friends' : state === 'followback' ? 'Follow Back' : `Follow ${peerName.split(' ')[0]}`;
   return (
-    <button type="button" disabled={busy} onClick={act} className={compact ? 'rounded-lg bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-50' : 'inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50'}>
+    <span className="inline-flex flex-col items-start gap-1">
+      <button type="button" disabled={busy} onClick={act} title={state === 'requested' ? 'Tap to cancel the request' : undefined} className={compact ? 'rounded-lg bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-50' : 'inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50'}>
       {state === 'following' || state === 'mutual' ? <Check className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
       {busy ? '...' : label}
-    </button>
+      </button>
+      {err && <span className="text-[11px] font-medium text-red-600 dark:text-red-400">{err}</span>}
+    </span>
   );
 };
 
@@ -98,7 +119,7 @@ export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, m
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{m.name}</span>
         <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
-          {m.online ? 'Live nowÂ·studying' : `${timeAgo(m.lastSeen)}Â·${m.streakDays}d streak`}
+          {m.online ? 'Live nowÃÂ·studying' : `${timeAgo(m.lastSeen)}ÃÂ·${m.streakDays}d streak`}
         </span>
       </span>
       {m.online && <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">LIVE</span>}
@@ -111,7 +132,7 @@ export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, m
       <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
         <div className="min-w-0">
           <h2 className="truncate font-display text-base font-bold text-slate-900 dark:text-white">{groupName}</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{online.length} live nowÂ·{members.length} members</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{online.length} live nowÃÂ·{members.length} members</p>
         </div>
         <button type="button" onClick={onClose} aria-label="Close members" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
           <X className="h-4 w-4" />
