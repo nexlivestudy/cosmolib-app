@@ -63,6 +63,12 @@ export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerCh
           </span>
         </div>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Chats unlock after a follow is accepted.</p>
+        {pendingCount > 0 && (
+          <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+            {pendingCount} message{pendingCount === 1 ? '' : 's'} sending when you are back online
+          </p>
+        )}
         <div className="mt-3 max-h-72 space-y-1 overflow-y-auto">
           {loadingConvos && <p className="py-4 text-center text-xs text-slate-500">Loading chats...</p>}
           {!loadingConvos && convos.length === 0 && (
