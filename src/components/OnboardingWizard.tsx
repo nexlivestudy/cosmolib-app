@@ -296,8 +296,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Your study handle"
+                    aria-describedby="onboard-name-hint"
                     className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
                   />
+                  <p id="onboard-name-hint" className={`mt-1 text-[11px] ${isStep1Valid ? 'text-slate-500 dark:text-slate-400' : 'font-medium text-amber-600 dark:text-amber-400'}`}>
+                    {isStep1Valid ? 'This is the name everyone sees in groups.' : 'Pick a study handle to continue - this is the name everyone sees.'}
+                  </p>
                 </div>
                 <div>
                   <label htmlFor="country-search" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
