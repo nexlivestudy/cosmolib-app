@@ -331,6 +331,121 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
     }
   };
 
+  const toggleReaction = (msgId: string, emoji: string) => {
+    const prevEmoji = myReactions[msgId];
+    const nextEmoji = prevEmoji === emoji ? null : emoji;
+    setMyReactions((prev) => {
+      const next = { ...prev };
+      if (nextEmoji) next[msgId] = nextEmoji;
+      else delete next[msgId];
+      return next;
+    });
+    setReactions((prev) => {
+      const cur = { ...(prev[msgId] || {}) };
+      if (prevEmoji) cur[prevEmoji] = Math.max(0, (cur[prevEmoji] || 1) - 1);
+      if (nextEmoji) cur[nextEmoji] = (cur[nextEmoji] || 0) + 1;
+      return { ...prev, [msgId]: cur };
+    });
+    try {
+      channelRef.current?.send({
+        type: 'broadcast',
+        event: nextEmoji ? 'reaction' : 'reaction-remove',
+        payload: { msgId, emoji: (nextEmoji || prevEmoji) as string },
+      });
+    } catch {
+      /* reaction best-effort */
+    }
+  };
+
+  const formatTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  };
+
+  const emitTyping = () => {
+    try {
+      channelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { name: profile.displayName } });
+    } catch {
+      /* best-effort */
+    }
+  };
+
+  // Voice notes: mic capture allowed ONLY in private live rooms (never university/global)
+  const startVoiceNote = async () => {
+    setAvError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      chunksRef.current = [];
+      rec.ondataavailable = (ev) => {
+        if (ev.data && ev.data.size > 0) chunksRef.current.push(ev.data);
+      };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (recordTimer.current) window.clearInterval(recordTimer.current);
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || 'audio/webm' });
+        const secs = recordSecs;
+        setRecording(false);
+        setRecordSecs(0);
+        if (blob.size < 500) return;
+        const localUrl = URL.createObjectURL(blob);
+        const msg: LiveChatMsg = {
+          id: `v-${Date.now()}`,
+          author: profile.displayName,
+          text: `Voice note (${secs}s) - private room`,
+          isBot: false,
+          createdAt: new Date().toISOString(),
+          audioUrl: localUrl,
+          audioSecs: secs,
+        };
+        setChat((prev) => [...prev, msg]);
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            channelRef.current?.send({
+              type: 'broadcast',
+              event: 'chat',
+              payload: { ...msg, audioUrl: String(reader.result || '') },
+            });
+          } catch {
+            /* large voice notes stay local-only */
+          }
+        };
+        try {
+          reader.readAsDataURL(blob);
+        } catch {
+          /* local-only playback */
+        }
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+      setRecordSecs(0);
+      recordTimer.current = window.setInterval(() => {
+        setRecordSecs((s) => {
+          if (s + 1 >= 60) {
+            try { rec.stop(); } catch { /* noop */ }
+            return s;
+          }
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      setAvError('Microphone blocked. Voice notes need mic permission (private rooms only).');
+    }
+  };
+
+  const stopVoiceNote = () => {
+    try {
+      (recorderRef.current as MediaRecorder | null)?.stop();
+    } catch {
+      setRecording(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <aside className="space-y-4 lg:col-span-4">
@@ -360,7 +475,8 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
           </div>
         </div>
         <div className="cosmo-card p-4">
-          <h3 className="text-sm font-semibold">Live controls</h3>
+          <h3 className="text-sm font-semibold">Live controls - private room, mic allowed</h3>
+          <p className="mt-0.5 text-[11px] text-slate-500">Mic + voice notes work ONLY here. University/global rooms stay silent.</p>
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => toggleAV(!camOn)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold">{camOn ? <VideoOff className="h-3.5 w-3.5" /> : <Video className="h-3.5 w-3.5" />}{camOn ? 'Cam off' : 'Cam on'}</button>
             <button type="button" onClick={toggleMic} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold">{micOn ? <Mic className="h-3.5 w-3.5" /> : <MicOff className="h-3.5 w-3.5" />}{micOn ? 'Mic on' : 'Muted'}</button>
