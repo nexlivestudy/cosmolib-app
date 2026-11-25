@@ -131,6 +131,13 @@
   z-index: 99999;
 }
 
+/* ===== App-wide readable form controls ===== */
+select,
+select option {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 @keyframes cosmoShimmer {
   0% {
     background-position: -200% 0;
