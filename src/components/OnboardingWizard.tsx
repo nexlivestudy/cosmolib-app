@@ -62,7 +62,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const initialBranches = getBranchesForDegree(initialStream, initialDegree);
   const initialInstitutions = getInstitutionsForDegree(initialStream, initialDegree);
 
-  const [displayName, setDisplayName] = useState(() => email.split('@')[0] || 'Scholar');
+  const [displayName, setDisplayName] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(detected);
   const [dailyTarget, setDailyTarget] = useState<DailyTargetHours>(4);
@@ -113,6 +113,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     sanitizeUserText(customInstitution, 100) ||
     (institution !== CUSTOM_OPTION ? sanitizeUserText(institution, 100) : '');
 
+  const isStep1Valid = displayName.trim().length > 0;
   const isStep4Valid = Boolean(degreeLevel && resolvedBranch && resolvedInstitution);
 
   const { universityBranchGroup, globalBranchGroup } = useMemo(
@@ -693,7 +694,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             {step < 5 ? (
               <button
                 type="button"
-                disabled={step === 4 && !isStep4Valid}
+                disabled={(step === 4 && !isStep4Valid) || (step === 1 && !isStep1Valid)}
                 onClick={() => setStep((s) => Math.min(5, s + 1))}
                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-45"
               >
