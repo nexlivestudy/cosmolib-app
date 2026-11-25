@@ -70,7 +70,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ me, member, onClose,
           {member.name.slice(0, 2).toUpperCase()}
         </div>
         <h3 className="mt-3 font-display text-lg font-bold text-slate-900 dark:text-white">{member.name}</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{member.branch || 'Cosmo Scholar'}{member.institution ? ` \u00b7 ${member.institution}` : ''}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{member.branch || 'Cosmo Scholar'}{member.institution ? ` · ${member.institution}` : ''}</p>
         <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           {member.online ? (<><span className="h-2 w-2 rounded-full bg-emerald-500" /> Live now</>) : (<><Clock className="h-3 w-3" /> {timeAgo(member.lastSeen)}</>)}
         </p>
