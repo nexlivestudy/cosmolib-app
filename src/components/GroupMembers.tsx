@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Clock, UserCheck, UserPlus, X } from 'lucide-react';
 import type { FollowStatus, RoomMember } from '../types';
-import { getFollowState, removeFollow, sendFollowRequest, timeAgo } from '../lib/social';
+import { getFollowStatus, removeFollow, sendFollowRequest, timeAgo } from '../lib/social';
 
 interface FollowButtonProps {
   myId: string;
