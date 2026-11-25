@@ -4,6 +4,7 @@ import { askRoomAssistant } from '../lib/aiClient';
 import { supabase } from '../lib/supabase';
 import type { BYOKConfig, LiveChatMsg, LiveRoom, UserProfile } from '../types';
 import { sanitizeUserText } from '../utils/security';
+import { CosmoSelect } from './ui/CosmoSelect';
 
 interface Props {
   profile: UserProfile;
@@ -456,11 +457,16 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
             <input value={roomName} onChange={(e) => setRoomName(e.target.value)} placeholder="Room name (e.g. Thermo Night)" className="w-full rounded-lg border px-3 py-2 text-xs dark:bg-[#0B0F19]" />
             <input value={roomTopic} onChange={(e) => setRoomTopic(e.target.value)} placeholder="Topic (e.g. Heat Transfer)" className="w-full rounded-lg border px-3 py-2 text-xs dark:bg-[#0B0F19]" />
             <div className="flex gap-2">
-              <select value={roomWhen} onChange={(e) => setRoomWhen(e.target.value)} className="w-full rounded-lg border px-2 py-2 text-xs dark:bg-[#0B0F19]">
-                <option value="now">Start live now</option>
-                <option value="Evening 7 PM">Evening 7 PM</option>
-                <option value="Tomorrow morning">Tomorrow morning</option>
-              </select>
+              <CosmoSelect
+                value={roomWhen}
+                onChange={setRoomWhen}
+                ariaLabel="Live session timing"
+                options={[
+                  { value: 'now', label: 'Start live now' },
+                  { value: 'Evening 7 PM', label: 'Evening 7 PM' },
+                  { value: 'Tomorrow morning', label: 'Tomorrow morning' },
+                ]}
+              />
               <button type="submit" className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shrink-0"><Plus className="h-3.5 w-3.5" /> Create</button>
             </div>
           </form>
