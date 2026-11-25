@@ -24,6 +24,8 @@ interface Props {
   canMessageWith: (peerId: string) => boolean;
   onClose: () => void;
   onProfileChanged?: () => void;
+  /** Render as a full tab page instead of a floating modal (used by the Profile nav tab). */
+  asPage?: boolean;
 }
 
 function initials(name: string): string {
