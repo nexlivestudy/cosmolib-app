@@ -58,7 +58,7 @@ export function normalizeMarksInput(raw: string): string {
 
 export function clampMarksOnBlur(raw: string): string {
   const trimmed = raw.trim();
-  if (!trimmed) return '60';
+  if (!trimmed) return '';
   const parsed = Number.parseInt(trimmed, 10);
   if (!Number.isFinite(parsed)) return '60';
   return String(Math.min(300, Math.max(10, parsed)));
@@ -77,7 +77,7 @@ interface ExamPanicModuleProps {
 
 export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGenerated }) => {
   const [subject, setSubject] = useState('');
-  const [totalMarksInput, setTotalMarksInput] = useState('60');
+  const [totalMarksInput, setTotalMarksInput] = useState('');
   const [syllabus, setSyllabus] = useState('');
   const [notes, setNotes] = useState('');
   const [pyqs, setPyqs] = useState('');
@@ -329,6 +329,10 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
       return;
     }
 
+    if (!totalMarksInput.trim()) {
+      setError('Enter your total exam marks (10-100) so we can build the right question set.');
+      return;
+    }
     const clampedStr = clampMarksOnBlur(totalMarksInput);
     setTotalMarksInput(clampedStr);
     const finalMarks = deriveTotalMarksNumber(clampedStr);
