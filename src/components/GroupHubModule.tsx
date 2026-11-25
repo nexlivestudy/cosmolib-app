@@ -537,7 +537,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
               <MicOff className="h-3.5 w-3.5 text-amber-400" />
-              <span>Silent Study Cam Grid ÃÂ· Mic Hardware-Disabled ÃÂ· {presencePeers.length || 1} in room</span>
+              <span>Silent Study Cam Grid ÃÂÃÂ· Mic Hardware-Disabled ÃÂÃÂ· {presencePeers.length || 1} in room</span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -588,7 +588,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                 </div>
               )}
               <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[11px] font-medium">
-                {profile.displayName} (You ÃÂ· Muted)
+                {profile.displayName} (You ÃÂÃÂ· Muted)
               </div>
             </div>
 
@@ -601,7 +601,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                     key={peer.userId}
                     className="relative flex aspect-video items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-xs text-slate-400"
                   >
-                    <span>{peer.name} ÃÂ· Silent Focus</span>
+                    <span>{peer.name} ÃÂÃÂ· Silent Focus</span>
                   </div>
                 ))}
           </div>
@@ -663,7 +663,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                       }`}
                     >
                       <span>{msg.author_name}</span>
-                      <span aria-hidden="true">ÃÂ·</span>
+                      <span aria-hidden="true">ÃÂÃÂ·</span>
                       <span className="font-mono tabular-nums">{msg.author_streak}d streak</span>
                       <span className="ml-auto font-mono font-normal tabular-nums opacity-80">
                         {formatChatTime(msg.created_at)}
@@ -678,7 +678,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                       {msg.content}
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                      {['Ã°ÂÂÂ', 'Ã¢ÂÂ¤', 'Ã°ÂÂÂ'].map((emoji) => {
+                      {['ÃÂ°ÃÂÃÂÃÂ', 'ÃÂ¢ÃÂÃÂ¤', 'ÃÂ°ÃÂÃÂÃÂ'].map((emoji) => {
                         const count = msgReacts[emoji] || 0;
                         const active = myReactions[msg.id] === emoji;
                         return (
@@ -857,13 +857,13 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                 </div>
               </button>
               {presencePeers.filter((p) => p.userId !== profile.id).map((p) => (
-                <div key={p.userId} className="flex items-center gap-2.5 rounded-lg px-2.5 py-2">
+                <button key={p.userId} type="button" onClick={() => setProfileSel({ peerId: p.userId, peerName: p.name || 'Cosmo Scholar' })} title={`Open ${p.name || 'member'} profile`} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800/60">
                   <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-500 text-xs font-bold text-white">{(p.name || '?').slice(0, 2).toUpperCase()}<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-[#111827]" /></span>
                   <div className="min-w-0">
                     <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">{p.name}</div>
                     <div className="text-[11px] text-emerald-600 dark:text-emerald-400">{p.camOn ? 'Live on cam' : 'In this room'}</div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
             <div className="mt-3 hidden">
@@ -916,7 +916,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                           {item.title}
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {item.category} ÃÂ· {item.file_size} ÃÂ· {item.uploader_name}
+                          {item.category} ÃÂÃÂ· {item.file_size} ÃÂÃÂ· {item.uploader_name}
                         </div>
                       </div>
                     </div>
