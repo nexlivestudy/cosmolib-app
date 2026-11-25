@@ -4,12 +4,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI, ThinkingLevel, Type, type GenerateContentParameters, type GenerateContentResponse } from '@google/genai';
 
-const PRIMARY_MODEL = (process.env.GEMINI_MODEL || '').trim() || 'gemini-3.8-flash';
+const PRIMARY_MODEL = (process.env.GEMINI_MODEL || '').trim() || 'gemini-2.5-flash';
 const FALLBACK_MODELS = [
-  'gemini-3.5-flash-lite',
+  'gemini-2.0-flash',
   'gemini-2.5-flash-lite',
-  'gemini-4-hydrogen',
-  'gemini-3.1-flash-lite',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
 ] as const;
 
 function shouldFallbackModel(err: unknown): boolean {
@@ -151,8 +151,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Security-Policy', cspDirectives);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // Camera allowed for Silent Live-Cam Grid; microphone strictly disabled at browser policy level
-  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+  // Camera + mic allowed for Live Study Rooms (personal Meet-type rooms); silent rooms still request video-only via getUserMedia({audio:false})
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=()');
   if (IS_PROD) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
@@ -222,7 +222,7 @@ async function callOpenAICompatibleJson(params: {
   const defaultModel =
     params.provider === 'groq'
       ? 'llama-3.3-70b-versatile'
-      : 'google/gemini-3.8-flash';
+      : 'google/gemini-2.5-flash';
 
   const resp = await fetch(endpoint, {
     method: 'POST',
@@ -732,6 +732,7 @@ async function resolveConceptYouTubeVideo(
 ): Promise<{ videoId: string; title: string } | null> {
   const cleanQuery = stripTagsServer(query, 160);
   if (!cleanQuery) return null;
+  // 1) Direct YouTube HTML scrape (works locally, often blocked on Render datacenter IPs)
   try {
     const res = await fetch(
       `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanQuery)}`,
@@ -743,25 +744,61 @@ async function resolveConceptYouTubeVideo(
         signal: AbortSignal.timeout(3500),
       }
     );
-    if (!res.ok) return null;
-    const html = await res.text();
-    const idx = html.indexOf('"videoRenderer":{"videoId":"');
-    if (idx < 0) return null;
-    const slice = html.slice(idx, idx + 1800);
-    const idMatch = slice.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
-    if (!idMatch?.[1]) return null;
-    const titleMatch = slice.match(/"title":\{"runs":\[\{"text":"([^"]{3,140})"/);
-    const decodedTitle = (titleMatch?.[1] || cleanQuery)
-      .replace(/\\u0026/g, '&')
-      .replace(/\\"/g, '"');
-    return {
-      videoId: idMatch[1],
-      title: stripTagsServer(decodedTitle, 140),
-    };
+    if (res.ok) {
+      const html = await res.text();
+      const idx = html.indexOf('"videoRenderer":{"videoId":"');
+      if (idx >= 0) {
+        const slice = html.slice(idx, idx + 1800);
+        const idMatch = slice.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
+        if (idMatch?.[1]) {
+          const titleMatch = slice.match(/"title":\{"runs":\[\{"text":"([^"]{3,140})"/);
+          const decodedTitle = (titleMatch?.[1] || cleanQuery)
+            .replace(/\\u0026/g, '&')
+            .replace(/\\"/g, '"');
+          return {
+            videoId: idMatch[1],
+            title: stripTagsServer(decodedTitle, 140),
+          };
+        }
+      }
+    }
   } catch {
-    return null;
+    // fall through to Invidious fallback
   }
+  // 2) Invidious public API fallback (no key, Render-friendly) - fixes YouTube AI on hosted link
+  const invidiousHosts = [
+    'https://yt.lemnoslife.com/noKey/search',
+    'https://invidious.nerdvpn.de/api/v1/search',
+  ];
+  for (const host of invidiousHosts) {
+    try {
+      const url = host.includes('lemnoslife')
+        ? `${host}?q=${encodeURIComponent(cleanQuery)}&type=video&page=1`
+        : `${host}?q=${encodeURIComponent(cleanQuery)}&type=video&page=1`;
+      const res = await fetch(url, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'cosmolib/1.0' },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as unknown;
+      const items: Array<{ videoId?: string; id?: string; title?: string }> = Array.isArray(data)
+        ? (data as Array<{ videoId?: string; id?: string; title?: string }>)
+        : Array.isArray((data as { results?: unknown[] })?.results)
+          ? ((data as { results: Array<{ videoId?: string; id?: string; title?: string }> }).results)
+          : [];
+      for (const it of items.slice(0, 5)) {
+        const vid = it.videoId || it.id || '';
+        if (/^[a-zA-Z0-9_-]{11}$/.test(vid)) {
+          return { videoId: vid, title: stripTagsServer(it.title || cleanQuery, 140) };
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
+
 
 // On-demand single-concept YouTube resolver for Exam Panic Easy Video tab
 app.get('/api/youtube/concept', aiRateLimit, async (req: Request, res: Response) => {
@@ -864,7 +901,55 @@ CRITICAL GRADING FORMAT:
   }
 });
 
+// 5. Live Room AI Bot - answers @cosmo questions inside personal Meet-type rooms
+app.post('/api/ai/room-assistant', aiRateLimit, async (req: Request, res: Response) => {
+  try {
+    const question = stripTagsServer(req.body?.question, 2000);
+    const roomTopic = stripTagsServer(req.body?.roomTopic, 200);
+    const history: string[] = Array.isArray(req.body?.history)
+      ? req.body.history.slice(-8).map((h: unknown) => stripTagsServer(h, 500))
+      : [];
+    if (!question) {
+      return res.status(400).json({ error: 'A question for @cosmo is required.' });
+    }
+    const byok = extractByok(req);
+    const systemInstruction =
+      'You are COSMO, the friendly AI teaching assistant inside a live CosmoLib study room (Meet-type). Answer briefly, exam-focused, with one tiny example. Keep under 120 words unless asked for detail.';
+    const prompt = 'Room topic: ' + (roomTopic || 'general study') + ' | Recent chat: ' + history.join(' | ').slice(0, 2000) + ' | Student asks: ' + question;
+    let answer = '';
+    if (byok.provider === 'groq' || byok.provider === 'openrouter') {
+      const raw = await callOpenAICompatibleJson({
+        provider: byok.provider,
+        apiKey: byok.apiKey!,
+        model: byok.modelOverride,
+        systemInstruction,
+        userPrompt: `${prompt}\nReturn JSON: { "answer": "..." }`,
+      });
+      try {
+        answer = (safeJsonParse<{ answer: string }>(raw).answer || '').trim();
+      } catch {
+        answer = raw.slice(0, 1000);
+      }
+    } else {
+      const ai = getGeminiClient(byok.provider === 'gemini' ? byok.apiKey : undefined);
+      const response = await generateContentWithFallback(ai, {
+        preferredModel: byok.modelOverride,
+        contents: prompt,
+        thinkingLevel: ThinkingLevel.LOW,
+        config: { systemInstruction },
+      });
+      answer = (response.text || '').trim().slice(0, 2000);
+    }
+    if (!answer) throw new Error('Empty AI response.');
+    res.json({ answer });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Room assistant failed.';
+    res.status(502).json({ error: message });
+  }
+});
+
 async function startServer() {
+
   if (!IS_PROD) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
