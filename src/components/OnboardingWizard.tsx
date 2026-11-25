@@ -17,6 +17,7 @@ import type {
   UserProfile,
 } from '../types';
 import { AnimatedBackground } from './AnimatedBackground';
+import { CosmoSelect } from './ui/CosmoSelect';
 import { sanitizeUserText } from '../utils/security';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../hooks/useTheme';
@@ -466,46 +467,36 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   <label htmlFor="onboard-degree" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Degree / Exam Level
                   </label>
-                  <select
+                  <CosmoSelect
                     id="onboard-degree"
                     value={degreeLevel}
-                    onChange={(e) => handleSelectDegree(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
-                  >
-                    {availableDegrees.map((lvl) => (
-                      <option key={lvl} value={lvl}>
-                        {lvl}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => handleSelectDegree(v)}
+                    ariaLabel="Degree or Exam Level"
+                    options={availableDegrees.map((lvl) => ({ value: lvl, label: lvl }))}
+                  />
                 </div>
 
                 <div>
                   <label htmlFor="onboard-branch" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Branch / Specialization
                   </label>
-                  <select
+                  <CosmoSelect
                     id="onboard-branch"
                     value={branch}
-                    onChange={(e) => {
-                      setBranch(e.target.value);
-                      if (e.target.value !== CUSTOM_OPTION) setCustomBranch('');
+                    onChange={(v) => {
+                      setBranch(v);
+                      if (v !== CUSTOM_OPTION) setCustomBranch('');
                     }}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
-                  >
-                    {availableBranches.length === 0 ? (
-                      <option value={CUSTOM_OPTION}>No preset branches — Enter custom below</option>
-                    ) : (
-                      <>
-                        {availableBranches.map((b) => (
-                          <option key={b} value={b}>
-                            {b}
-                          </option>
-                        ))}
-                        <option value={CUSTOM_OPTION}>Other (Custom Specialization)</option>
-                      </>
-                    )}
-                  </select>
+                    ariaLabel="Branch or Specialization"
+                    options={
+                      availableBranches.length === 0
+                        ? [{ value: CUSTOM_OPTION, label: 'No preset branches - Enter custom below' }]
+                        : [
+                            ...availableBranches.map((b) => ({ value: b, label: b })),
+                            { value: CUSTOM_OPTION, label: 'Other (Custom Specialization)' },
+                          ]
+                    }
+                  />
                   {isCustomBranchActive && (
                     <div className="mt-2">
                       {availableBranches.length === 0 && (
