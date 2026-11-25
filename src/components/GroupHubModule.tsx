@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Bell,
   Camera,
   CameraOff,
   CheckCheck,
@@ -13,15 +12,13 @@ import {
   Reply,
   Send,
   Upload,
-  UserCheck,
-  UserPlus,
+  Users,
   Video,
   X,
 } from 'lucide-react';
-import { INITIAL_STUDY_BUDDIES } from '../data/catalog';
 import { NEXLIVE_STORAGE_BUCKET, supabase } from '../lib/supabase';
 import type {
-  BuddyProfile,
+  RoomMember,
   GroupMessage,
   GroupResourceItem,
   StudyGroup,
@@ -29,7 +26,10 @@ import type {
 } from '../types';
 import { sanitizeHttpsUrl, sanitizeUserText, validateVaultFile } from '../utils/security';
 import { CosmoSelect } from './ui/CosmoSelect';
-import { canSendBuddyAlert } from '../utils/studyLogic';
+import { GroupMembers } from './GroupMembers';
+import { NotificationsBell } from './NotificationsBell';
+import { DirectMessages } from './DirectMessages';
+import { fetchGroupMembers, heartbeat, listConversations } from '../lib/social';
 
 interface GroupHubModuleProps {
   profile: UserProfile;
