@@ -71,8 +71,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const channelRef = useRef<any>(null);
 
-  const [resourceCategory, setResourceCategory] =
-    useState<GroupResourceItem['category']>('PDF Notes');
+  const [resourceCategory, setResourceCategory] = useState<GroupResourceItem['category'] | ''>('');
   const [uploadingVault, setUploadingVault] = useState(false);
   const [vaultError, setVaultError] = useState<string | null>(null);
   const [vaultNotice, setVaultNotice] = useState<string | null>(null);
@@ -361,6 +360,11 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
 
     setVaultError(null);
     setVaultNotice(null);
+
+    if (!resourceCategory) {
+      setVaultError('Pick a vault category first (notes, PYQ, formula sheet, or lecture deck).');
+      return;
+    }
 
     // Client-side validation: PDF, JPG, PNG, MP3, MP4 only + 50MB max
     const check = validateVaultFile({ name: file.name, size: file.size, type: file.type });
