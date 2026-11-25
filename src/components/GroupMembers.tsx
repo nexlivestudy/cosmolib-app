@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Clock, UserCheck, UserPlus, X } from 'lucide-react';
-import type { FollowState, RoomMember } from '../types';
+import type { FollowStatus, RoomMember } from '../types';
 import { getFollowState, removeFollow, sendFollowRequest, timeAgo } from '../lib/social';
 
 interface FollowButtonProps {
@@ -13,11 +13,11 @@ interface FollowButtonProps {
 }
 
 export const FollowButton: React.FC<FollowButtonProps> = ({ myId, myName, peerId, peerName, compact, onAccepted }) => {
-  const [state, setState] = useState<FollowState>('none');
+  const [state, setState] = useState<FollowStatus>('none');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let live = true;
-    getFollowState(myId, peerId).then((s) => { if (live) setState(s); });
+    getFollowStatus(myId, peerId).then((s) => { if (live) setState(s); });
     return () => { live = false; };
   }, [myId, peerId]);
   const act = async () => {
