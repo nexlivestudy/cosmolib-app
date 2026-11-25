@@ -185,7 +185,8 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
       }));
       setStatusMessage(`Loaded distraction-free player and generated ${syncedNotes.length} synced AI notes.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Added video, but synced AI notes could not be generated.');
+      const msg = err instanceof Error ? err.message : 'AI notes service unreachable.';
+      setError(`Video added and playable - AI notes failed: ${msg}. Backend now uses Gemini 2.5 Flash; re-add the video to retry.`);
     } finally {
       setGeneratingYtNotes(false);
     }
@@ -497,8 +498,10 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                       </div>
                       <div className="aspect-video overflow-hidden rounded-lg bg-black">
                         <iframe
+                          key={activeYoutubeResource.youtubeId}
+                          id={`yt-player-${activeYoutubeResource.id}`}
                           title={activeYoutubeResource.title}
-                          src={`https://www.youtube-nocookie.com/embed/${activeYoutubeResource.youtubeId}?rel=0&modestbranding=1`}
+                          src={`https://www.youtube-nocookie.com/embed/${activeYoutubeResource.youtubeId}?rel=0&modestbranding=1&enablejsapi=1`}
                           allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                           className="h-full w-full border-0"
@@ -507,7 +510,7 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                     </div>
                     <div className="xl:col-span-5">
                       <h4 className="text-xs font-semibold text-cyan-700 dark:text-cyan-400">
-                        Synced AI Lecture Notes
+                        Synced AI Lecture Notes - click a timestamp to jump
                       </h4>
                       <div className="mt-3 max-h-72 space-y-2.5 overflow-y-auto pr-1">
                         {(activeYoutubeResource.syncedNotes || []).map((note, idx) => (
@@ -525,7 +528,7 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                         ))}
                         {(!activeYoutubeResource.syncedNotes || activeYoutubeResource.syncedNotes.length === 0) && (
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            No synced notes generated yet for this video.
+                            No synced notes yet. The lecture video above is fully watchable - AI checkpoints appear here once generation succeeds (fixed Gemini 2.5 Flash backend).
                           </p>
                         )}
                       </div>
