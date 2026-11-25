@@ -597,7 +597,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
         </section>
       )}
 
-      {/* Hybrid 3-Column Hub: Center WhatsApp Chat + Right Telegram Vault & Study Buddies */}
+      {/* Group hub: chat + files + messages tabs, members-first social rail */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Center WhatsApp-Style Chat (group_messages) */}
         <section className="flex h-[540px] flex-col rounded-xl border border-slate-200 bg-white xl:col-span-7 dark:border-slate-800 dark:bg-[#111827]">
