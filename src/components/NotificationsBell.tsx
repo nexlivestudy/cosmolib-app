@@ -52,7 +52,7 @@ export const NotificationsBell: React.FC<Props> = ({ userId, userName, onChanged
     <div className="relative" ref={btnWrapRef}>
       <button type="button" onClick={openPanel} aria-label="Notifications" className="relative inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 dark:hover:bg-slate-800">
         <Bell className="h-3.5 w-3.5" />
-        |span className="hidden sm:inline">Alerts</span>
+        <span className="hidden sm:inline">Alerts</span>
         {unread > 0 && (
           <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span>
         )}
