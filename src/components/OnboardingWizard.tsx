@@ -521,28 +521,23 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   <label htmlFor="onboard-inst" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     University / Institution Directory
                   </label>
-                  <select
+                  <CosmoSelect
                     id="onboard-inst"
                     value={institution}
-                    onChange={(e) => {
-                      setInstitution(e.target.value);
-                      if (e.target.value !== CUSTOM_OPTION) setCustomInstitution('');
+                    onChange={(v) => {
+                      setInstitution(v);
+                      if (v !== CUSTOM_OPTION) setCustomInstitution('');
                     }}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
-                  >
-                    {availableInstitutions.length === 0 ? (
-                      <option value={CUSTOM_OPTION}>No preset institutions — Enter custom below</option>
-                    ) : (
-                      <>
-                        {availableInstitutions.map((inst) => (
-                          <option key={inst} value={inst}>
-                            {inst}
-                          </option>
-                        ))}
-                        <option value={CUSTOM_OPTION}>Other (Enter Custom Institution)</option>
-                      </>
-                    )}
-                  </select>
+                    ariaLabel="University or Institution Directory"
+                    options={
+                      availableInstitutions.length === 0
+                        ? [{ value: CUSTOM_OPTION, label: 'No preset institutions - Enter custom below' }]
+                        : [
+                            ...availableInstitutions.map((inst) => ({ value: inst, label: inst })),
+                            { value: CUSTOM_OPTION, label: 'Other (Enter Custom Institution)' },
+                          ]
+                    }
+                  />
                 </div>
 
                 <div>
