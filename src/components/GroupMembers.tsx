@@ -63,7 +63,7 @@ export const FollowButton: React.FC<FollowButtonProps> = ({ myId, myName, peerId
   );
 };
 
-export export interface SelectedProfile {
+export interface SelectedProfile {
   peerId: string;
   peerName: string;
 }
@@ -101,10 +101,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ me, onClose, onMessa
     />
   );
 };
-export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, members, loading, me, canMessageWith, onMessage, onClose }) => {
+export interface MembersDrawerProps {
+  profileState?: { selected: SelectedProfile | null };
+  setProfileState?: (s: SelectedProfile | null) => void;
+  open: boolean;
+  groupName: string;
+  members: RoomMember[];
+  loading: boolean;
+  me: { id: string; name: string };
+  canMessageWith: (peerId: string) => boolean;
+  onMessage: (member: RoomMember) => void;
+  onClose: () => void;
+}
+
+export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, members, loading, me, canMessageWith, onMessage, onClose, profileState, setProfileState }) => {
   const [query, setQuery] = useState('');
-  const [_selected, _setSelected] = useState<RoomMember | null>(null);
-  void _selected; void _setSelected;
+  void profileState;
   if (!open) return null;
   const q = query.trim().toLowerCase();
   const filtered = q ? members.filter((m) => m.name.toLowerCase().includes(q)) : members;
@@ -119,7 +131,7 @@ export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, m
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-slate-900 dark:text-white">{m.name}</span>
         <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">
-          {m.online ? 'Live nowÃÂ·studying' : `${timeAgo(m.lastSeen)}ÃÂ·${m.streakDays}d streak`}
+          {m.online ? 'Live nowÃÂÃÂ·studying' : `${timeAgo(m.lastSeen)}ÃÂÃÂ·${m.streakDays}d streak`}
         </span>
       </span>
       {m.online && <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">LIVE</span>}
@@ -132,7 +144,7 @@ export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, m
       <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
         <div className="min-w-0">
           <h2 className="truncate font-display text-base font-bold text-slate-900 dark:text-white">{groupName}</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{online.length} live nowÃÂ·{members.length} members</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{online.length} live nowÃÂÃÂ·{members.length} members</p>
         </div>
         <button type="button" onClick={onClose} aria-label="Close members" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
           <X className="h-4 w-4" />
@@ -154,9 +166,6 @@ export const MembersDrawer: React.FC<MembersDrawerProps> = ({ open, groupName, m
         </>)}
       </div>
     </aside>
-    {selected && (
-      <ProfileModal me={me} member={selected} onClose={() => setSelected(null)} onMessage={(m) => { setSelected(null); onMessage(m); }} canMessage={canMessageWith(selected.id)} />
-    )}
     </>
   );
 };
