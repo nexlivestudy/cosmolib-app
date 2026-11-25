@@ -27,7 +27,7 @@ import type {
 } from '../types';
 import { sanitizeHttpsUrl, sanitizeUserText, validateVaultFile } from '../utils/security';
 import { CosmoSelect } from './ui/CosmoSelect';
-import { MembersDrawer } from './GroupMembers';
+import { MembersDrawer, ProfileModal, type SelectedProfile } from './GroupMembers';
 import { NotificationsBell } from './NotificationsBell';
 import { DirectMessages } from './DirectMessages';
 import { fetchGroupMembers, heartbeat, listConversations } from '../lib/social';
@@ -101,6 +101,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
   const [members, setMembers] = useState<RoomMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [dmPeer, setDmPeer] = useState<RoomMember | null>(null);
+  const [profileSel, setProfileSel] = useState<SelectedProfile | null>(null);
   const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
 
   // Subscribe to Supabase Realtime for group_messages, group_resources, and presence
@@ -536,7 +537,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
               <MicOff className="h-3.5 w-3.5 text-amber-400" />
-              <span>Silent Study Cam Grid · Mic Hardware-Disabled · {presencePeers.length || 1} in room</span>
+              <span>Silent Study Cam Grid Â· Mic Hardware-Disabled Â· {presencePeers.length || 1} in room</span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -587,7 +588,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                 </div>
               )}
               <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[11px] font-medium">
-                {profile.displayName} (You · Muted)
+                {profile.displayName} (You Â· Muted)
               </div>
             </div>
 
@@ -600,7 +601,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                     key={peer.userId}
                     className="relative flex aspect-video items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-xs text-slate-400"
                   >
-                    <span>{peer.name} · Silent Focus</span>
+                    <span>{peer.name} Â· Silent Focus</span>
                   </div>
                 ))}
           </div>
@@ -662,7 +663,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                       }`}
                     >
                       <span>{msg.author_name}</span>
-                      <span aria-hidden="true">·</span>
+                      <span aria-hidden="true">Â·</span>
                       <span className="font-mono tabular-nums">{msg.author_streak}d streak</span>
                       <span className="ml-auto font-mono font-normal tabular-nums opacity-80">
                         {formatChatTime(msg.created_at)}
@@ -677,7 +678,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                       {msg.content}
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                      {['👍', '❤', '😂'].map((emoji) => {
+                      {['ð', 'â¤', 'ð'].map((emoji) => {
                         const count = msgReacts[emoji] || 0;
                         const active = myReactions[msg.id] === emoji;
                         return (
@@ -824,6 +825,20 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           canMessageWith={canMessage}
           onMessage={openDirectChat}
           onClose={() => setMembersOpen(false)}
+          profileState={{ selected: profileSel }}
+          setProfileState={setProfileSel}
+        />
+        <ProfileModal
+          me={{ id: profile.id, name: profile.displayName }}
+          member={{} as RoomMember}
+          onClose={() => setProfileSel(null)}
+          onMessage={openDirectChat}
+          canMessage={!!profileSel && canMessage(profileSel.peerId)}
+          onlineIds={presencePeers.map((p) => p.userId)}
+          onProfileChanged={() => void loadMembers(false)}
+          meFull={{ id: profile.id, displayName: profile.displayName }}
+          profileState={{ selected: profileSel }}
+          setProfileState={setProfileSel}
         />
 
         {/* Right Panel: members-first social rail */}
@@ -901,7 +916,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
                           {item.title}
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {item.category} · {item.file_size} · {item.uploader_name}
+                          {item.category} Â· {item.file_size} Â· {item.uploader_name}
                         </div>
                       </div>
                     </div>
