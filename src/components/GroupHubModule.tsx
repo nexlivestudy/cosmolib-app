@@ -772,8 +772,25 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
               <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length) + 1} here</span>
             </div>
             <div className="mt-3 max-h-56 space-y-1 overflow-y-auto">
-
-            <div className="mt-3 flex items-center gap-2">
+              <div className="flex items-center gap-2.5 rounded-lg bg-indigo-50 px-2.5 py-2 dark:bg-indigo-500/10">
+                <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">{getInitials(profile.displayName)}<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-[#111827]" /></span>
+                <div className="min-w-0">
+                  <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">{profile.displayName} (You)</div>
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400">Live now</div>
+                </div>
+              </div>
+              {presencePeers.filter((p) => p.userId !== profile.id).map((p) => (
+                <div key={p.userId} className="flex items-center gap-2.5 rounded-lg px-2.5 py-2">
+                  <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-500 text-xs font-bold text-white">{(p.name || '?').slice(0, 2).toUpperCase()}<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-[#111827]" /></span>
+                  <div className="min-w-0">
+                    <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400">{p.camOn ? 'Live on cam' : 'In this room'}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 hidden">
+              <div className="mt-3 flex items-center gap-2">
               <CosmoSelect
                 value={resourceCategory}
                 onChange={(v) => setResourceCategory(v as GroupResourceItem['category'])}
