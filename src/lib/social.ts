@@ -471,3 +471,55 @@ function writeJson(key: string, value: unknown): void {
     /* storage full/blocked - cache is best-effort */
   }
 }
+
+export function loadOutbox(ownerId: string): QueuedMessage[] {
+  const list = readJson<QueuedMessage[]>(outboxKey(ownerId), []);
+  return Array.isArray(list) ? list : [];
+}
+
+function saveOutbox(ownerId: string, list: QueuedMessage[]): void {
+  writeJson(outboxKey(ownerId), list.slice(-50));
+}
+
+export function queueOfflineMessage(senderId: string, receiverId: string, rawText: string): QueuedMessage | null {
+  const text = (rawText || '').trim().slice(0, 1000);
+  if (!senderId || !receiverId || !text) return null;
+  const entry: QueuedMessage = {
+    clientId: `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    senderId,
+    receiverId,
+    content: text,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  };
+  const list = loadOutbox(senderId);
+  list.push(entry);
+  saveOutbox(senderId, list);
+  return entry;
+}
+
+function dropQueued(ownerId: string, clientId: string): void {
+  saveOutbox(ownerId, loadOutbox(ownerId).filter((q) => q.clientId !== clientId));
+}
+
+function bumpAttempts(ownerId: string, clientId: string): void {
+  saveOutbox(
+    ownerId,
+    loadOutbox(ownerId).map((q) => (q.clientId === clientId ? { ...q, attempts: q.attempts + 1 } : q))
+  );
+}
+
+export async function flushOutbox(ownerId: string): Promise<number> {
+  const pending = loadOutbox(ownerId);
+  for (const q of pending) {
+    if (!navigator.onLine) break;
+    try {
+      const sent = await sendDM(q.senderId, q.receiverId, q.content);
+      if (sent) dropQueued(ownerId, q.clientId);
+      else bumpAttempts(ownerId, q.clientId);
+    } catch {
+      bumpAttempts(ownerId, q.clientId);
+    }
+  }
+  return loadOutbox(ownerId).length;
+}
