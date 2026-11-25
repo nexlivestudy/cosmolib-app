@@ -100,4 +100,85 @@ export const ProfileScreen: React.FC<Props> = ({
     return data.publicUrl || null;
   };
 
-// __PART2__
+  const handleDpPick = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setSaveError('Pick an image file for your display picture.');
+      return;
+    }
+    setUploadingDp(true);
+    setSaveError(null);
+    try {
+      const url = await uploadImage(file, 'dp');
+      if (!url) throw new Error('Upload failed.');
+      const res = await updateMyProfile(me.id, { avatar_url: url });
+      if (!res.ok) throw new Error(res.error || 'Save failed.');
+      await refresh();
+      onProfileChanged?.();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'DP upload failed.');
+    } finally {
+      setUploadingDp(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const res = await updateMyProfile(me.id, {
+        display_name: sanitizeUserText(editName, 60),
+        bio: sanitizeUserText(editBio, 160),
+      });
+      if (!res.ok) throw new Error(res.error || 'Save failed.');
+      setEditing(false);
+      await refresh();
+      onProfileChanged?.();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePhotoPick = (file: File | undefined) => {
+    setPhotoFile(file || null);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPhotoPreview(url);
+    } else {
+      setPhotoPreview(null);
+    }
+  };
+
+  const handlePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPosting(true);
+    setPostError(null);
+    try {
+      let url: string | null = null;
+      if (photoFile) {
+        if (!photoFile.type.startsWith('image/')) throw new Error('Post photo must be an image.');
+        url = await uploadImage(photoFile, 'posts');
+      }
+      const res = await createPost(me.id, caption, url);
+      if (!res.ok) throw new Error(res.error || 'Post failed.');
+      setCaption('');
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      setComposerOpen(false);
+      await refresh();
+    } catch (err) {
+      setPostError(err instanceof Error ? err.message : 'Post failed.');
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleDeletePost = async (id: string) => {
+    if (!window.confirm('Delete this post?')) return;
+    const ok = await deletePost(me.id, id);
+    if (ok) setPosts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+// __PART3__
