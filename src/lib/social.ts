@@ -667,3 +667,36 @@ export function queueGroupMessage(
   saveGroupOutbox(senderId, list);
   return entry;
 }
+
+export async function flushGroupOutbox(ownerId: string): Promise<number> {
+  const pending = loadGroupOutbox(ownerId);
+  for (const q of pending) {
+    if (!navigator.onLine) break;
+    try {
+      const { error } = await supabase.from('group_messages').insert({
+        group_id: q.groupId,
+        user_id: q.senderId,
+        author_name: q.authorName,
+        author_streak: q.authorStreak,
+        content: q.content,
+      });
+      if (!error) dropQueuedGroup(ownerId, q.clientId);
+    } catch {
+    }
+  }
+  return loadGroupOutbox(ownerId).length;
+}
+
+export function loadCachedGroupMessages(groupId: string): import('../types').GroupMessage[] {
+  const list = readJson<import('../types').GroupMessage[]>(groupCacheKey(groupId), []);
+  return Array.isArray(list) ? list : [];
+}
+
+export function saveCachedGroupMessages(groupId: string, msgs: import('../types').GroupMessage[]): void {
+  writeJson(groupCacheKey(groupId), msgs.slice(-120));
+}
+
+export function loadCachedGroupFiles(groupId: string): import('../types').GroupResourceItem[] {
+  const list = readJson<import('../types').GroupResourceItem[]>(groupFilesCacheKey(groupId), []);
+  return Array.isArray(list) ? list : [];
+}
