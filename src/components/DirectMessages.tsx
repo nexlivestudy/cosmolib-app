@@ -218,10 +218,22 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
             {liveFeed ? 'Connected - chat unlocked' : 'Checking for new messages...'}
           </div>
         </div>
+        <button type="button" onClick={() => setShowDates((s) => !s)} aria-label="Jump to date" title="Jump to date" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <CalendarDays className="h-4 w-4" />
+        </button>
         <button type="button" onClick={() => setShowThemes((s) => !s)} aria-label="Chat theme" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
           <Palette className="h-4 w-4" />
         </button>
       </div>
+      {showDates && threadDays(msgs).length > 0 && (
+        <div className="flex flex-wrap gap-1.5 border-b border-slate-200 p-2 dark:border-slate-800">
+          {threadDays(msgs).map((d) => (
+            <button key={d.day} type="button" onClick={() => scrollToDay(d.day)} className="rounded-full border border-slate-300 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              {d.label}
+            </button>
+          ))}
+        </div>
+      )}
       {showThemes && (
         <div className="flex gap-2 border-b border-slate-200 p-2 dark:border-slate-800">
           {CHAT_THEMES.map((th) => (
