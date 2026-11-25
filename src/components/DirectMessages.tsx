@@ -39,7 +39,10 @@ export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerCh
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#111827]">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">Messages</h2>
-          <MessageCircle className="h-4 w-4 text-slate-400" />
+          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${liveFeed ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`} title={liveFeed ? 'Live updates on - new messages arrive instantly' : 'Live updates off - checking for new messages every few seconds'}>
+            <span className={`h-1.5 w-1.5 rounded-full ${liveFeed ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+            {liveFeed ? 'Live' : 'Checking...'}
+          </span>
         </div>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Chats unlock after a follow is accepted.</p>
         <div className="mt-3 max-h-72 space-y-1 overflow-y-auto">
