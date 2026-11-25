@@ -226,6 +226,46 @@ export interface BuddyProfile {
   lastAlertSentAt: number | null;
 }
 
+export type FollowStatus = 'none' | 'requested' | 'following' | 'followback' | 'mutual';
+
+export interface FollowEdge {
+  id: string;
+  follower_id: string;
+  followee_id: string;
+  status: 'pending' | 'accepted' | 'declined' | 'blocked';
+  created_at: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  body: string;
+  actor_id: string;
+  actor_name: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface DirectMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+}
+
+export interface RoomMember {
+  id: string;
+  name: string;
+  streakDays: number;
+  branch: string;
+  institution: string;
+  online: boolean;
+  lastSeen: string | null;
+}
+
 export type BYOKProvider = 'default' | 'gemini' | 'groq' | 'openrouter';
 
 export interface BYOKConfig {
