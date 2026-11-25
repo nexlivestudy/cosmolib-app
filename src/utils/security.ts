@@ -48,12 +48,21 @@ export function sanitizeFileName(rawName: string): string {
 /**
  * Validate a file before uploading to Supabase Storage bucket `nexlive-vault`.
  * Enforces allowed types (pdf, jpg/jpeg, png, mp3, mp4) and 50MB max size client-side.
+ * Single-interface shape (not a discriminated union) so `tsc --noEmit` passes
+ * even without `strictNullChecks`, and fresh clones lint clean.
  */
+export interface VaultCheck {
+  valid: boolean;
+  safeName: string;
+  ext: string;
+  error: string;
+}
+
 export function validateVaultFile(file: {
   name: string;
   size: number;
   type: string;
-}): { valid: true; safeName: string; ext: string } | { valid: false; error: string } {
+}): VaultCheck {
   const safeName = sanitizeFileName(file.name);
   const parts = safeName.toLowerCase().split('.');
   const ext = parts.length > 1 ? parts[parts.length - 1] : '';
@@ -61,6 +70,8 @@ export function validateVaultFile(file: {
   if (!(ALLOWED_VAULT_EXTENSIONS as readonly string[]).includes(ext)) {
     return {
       valid: false,
+      safeName,
+      ext,
       error: `Unsupported file type ".${ext || 'unknown'}". Allowed formats: PDF, JPG, PNG, MP3, MP4 only.`,
     };
   }
@@ -69,23 +80,27 @@ export function validateVaultFile(file: {
   if (normalizedMime && !ALLOWED_VAULT_MIME_TYPES.has(normalizedMime)) {
     return {
       valid: false,
+      safeName,
+      ext,
       error: `Blocked MIME type "${normalizedMime}". Only PDF, JPG, PNG, MP3, and MP4 files are permitted.`,
     };
   }
 
   if (!Number.isFinite(file.size) || file.size <= 0) {
-    return { valid: false, error: 'File appears to be empty.' };
+    return { valid: false, safeName, ext, error: 'File appears to be empty.' };
   }
 
   if (file.size > MAX_VAULT_FILE_BYTES) {
     const mb = (file.size / (1024 * 1024)).toFixed(1);
     return {
       valid: false,
+      safeName,
+      ext,
       error: `File is ${mb} MB, which exceeds the strict 50 MB upload limit for nexlive-vault.`,
     };
   }
 
-  return { valid: true, safeName, ext };
+  return { valid: true, safeName, ext, error: '' };
 }
 
 /**
