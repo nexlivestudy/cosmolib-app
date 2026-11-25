@@ -88,9 +88,9 @@ export async function heartbeat(userId: string, isLive: boolean): Promise<void> 
   } catch { /* best-effort presence */ }
 }
 
-export type FollowState = 'none' | 'requested' | 'following' | 'followback' | 'mutual';
+export type FollowStatus = 'none' | 'requested' | 'following' | 'followback' | 'mutual';
 
-export async function getFollowState(myId: string, otherId: string): Promise<FollowState> {
+export async function getFollowStatus(myId: string, otherId: string): Promise<FollowStatus> {
   if (!supabase || !myId || !otherId || myId === otherId) return 'none';
   try {
     const { data } = await supabase.from('follows').select('follower_id,status').or(`and(follower_id.eq.${myId},followee_id.eq.${otherId}),and(follower_id.eq.${otherId},followee_id.eq.${myId})`);
