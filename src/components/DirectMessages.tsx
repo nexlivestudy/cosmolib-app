@@ -145,7 +145,9 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-xs font-bold text-white">{peer.name.slice(0, 2).toUpperCase()}</span>
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{peer.name}</div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400">Connected - chat unlocked</div>
+          <div className={`text-[11px] font-medium ${liveFeed ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+            {liveFeed ? 'Connected - chat unlocked' : 'Checking for new messages...'}
+          </div>
         </div>
         <button type="button" onClick={() => setShowThemes((s) => !s)} aria-label="Chat theme" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
           <Palette className="h-4 w-4" />
