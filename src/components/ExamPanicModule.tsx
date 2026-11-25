@@ -670,7 +670,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
 
       {/* Generating Skeleton Loader */}
       {generating && (
-        <WorkspaceSkeletonLoader label="Synthesizing High-Yield Map, Master Rescue PDF & adaptive questions via Gemini 3.8 Flash..." />
+        <WorkspaceSkeletonLoader label="Synthesizing High-Yield Map, Master Rescue PDF & adaptive questions via Gemini 2.5 Flash..." />
       )}
 
       {/* Illustrated Empty State when no pack generated yet */}
