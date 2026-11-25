@@ -183,6 +183,13 @@ export const ProfileScreen: React.FC<Props> = ({
     if (ok) setPosts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  if (asPage) {
+    return (
+      <div className="mx-auto w-full max-w-3xl">
+        <ProfileBody />
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 sm:items-center sm:p-4" onClick={onClose}>
       <div
