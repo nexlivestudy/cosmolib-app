@@ -36,7 +36,7 @@ export type DailyTargetHours = 2 | 4 | 6 | 8;
 
 export type StudyVibe = 'night_cook' | 'early_bird';
 
-export interface StudyFolder {
+export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
