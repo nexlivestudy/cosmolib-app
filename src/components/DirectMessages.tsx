@@ -231,30 +231,53 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
           ))}
         </div>
       )}
-      <div className="flex-1 space-y-2 overflow-y-auto p-4">
-        {msgs.length === 0 && <p className="py-8 text-center text-xs text-slate-500">Say hello - this is the start of your chat with {peer.name}.</p>}
-        {msgs.map((m) => {
-          const mine = m.sender_id === myId;
-          const mr = reacts[m.id] || {};
-          return (
-            <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${mine ? t.own : 'border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-100'}`}>
-                <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  {['\ud83d\ude0d', '\u2764\ufe0f', '\ud83d\ude02'].map((emoji) => {
-                    const cnt = mr[emoji] || 0;
-                    const active = myReacts[m.id] === emoji;
-                    return (
-                      <button key={emoji} type="button" onClick={() => toggleReact(m.id, emoji)} className={`rounded-full px-1 text-[11px] leading-none ${active ? 'bg-black/10 scale-110' : 'opacity-50 hover:opacity-100'}`}>{emoji}{cnt > 0 && <span className="ml-0.5 font-mono">{cnt}</span>}</button>
-                    );
-                  })}
-                  <span className="ml-auto font-mono text-[10px] opacity-60 tabular-nums">{formatClock(m.created_at)}</span>
-                  {mine && <CheckCheck className="h-3 w-3 opacity-60" />}
+      <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto p-4">
+        {msgs.length === 0 && queued.length === 0 && <p className="py-8 text-center text-xs text-slate-500">Say hello - this is the start of your chat with {peer.name}.</p>}
+        {useMemo(() => sectionByDay(msgs), [msgs]).map((sec) =>
+          sec.kind === 'day' ? (
+            <div key={sec.key} id={`dm-day-${sec.key.slice(4)}`} className="flex items-center gap-2 py-1 scroll-mt-2">
+              <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">{sec.label}</span>
+              <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            </div>
+          ) : (
+            (() => {
+              const m = sec.msg;
+              const mine = m.sender_id === myId;
+              const mr = reacts[m.id] || {};
+              return (
+                <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${mine ? t.own : 'border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-100'}`}>
+                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      {['\ud83d\ude0d', '\u2764\ufe0f', '\ud83d\ude02'].map((emoji) => {
+                        const cnt = mr[emoji] || 0;
+                        const active = myReacts[m.id] === emoji;
+                        return (
+                          <button key={emoji} type="button" onClick={() => toggleReact(m.id, emoji)} className={`rounded-full px-1 text-[11px] leading-none ${active ? 'bg-black/10 scale-110' : 'opacity-50 hover:opacity-100'}`}>{emoji}{cnt > 0 && <span className="ml-0.5 font-mono">{cnt}</span>}</button>
+                        );
+                      })}
+                      <span className="ml-auto font-mono text-[10px] opacity-60 tabular-nums">{formatClock(m.created_at)}</span>
+                      {mine && <CheckCheck className="h-3 w-3 opacity-60" />}
+                    </div>
+                  </div>
                 </div>
+              );
+            })()
+          )
+        )}
+        {queued.map((q) => (
+          <div key={q.clientId} className="flex justify-end">
+            <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm opacity-80 ${t.own}`}>
+              <p className="whitespace-pre-wrap break-words">{q.content}</p>
+              <div className="mt-1 flex items-center justify-end gap-1">
+                <span className="font-mono text-[10px] opacity-70 tabular-nums">{formatClock(q.createdAt)}</span>
+                <span className="text-[10px] font-semibold opacity-80">Pending - sends automatically</span>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
+        {sendError && <p role="alert" className="text-center text-xs font-medium text-red-600 dark:text-red-400">{sendError}</p>}
       </div>
       <form onSubmit={send} className="flex items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-800">
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={`Message ${peer.name}...`} aria-label="Direct message" className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white" />
