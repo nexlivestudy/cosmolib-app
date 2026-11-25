@@ -91,7 +91,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
       id: 'panic' as ActiveModule,
       title: 'Exam Panic Mode',
       subtitle: 'Upload syllabus + PYQs for Master Rescue PDF, 20/40 Qs & AI grading.',
-      metricLabel: `${packsGeneratedCount} rescue ${packsGeneratedCount === 1 ? 'pack' : 'packs'} built · Gemini 3.8 Flash`,
+      metricLabel: `${packsGeneratedCount} rescue ${packsGeneratedCount === 1 ? 'pack' : 'packs'} built · Gemini 2.5 Flash`,
       progressPct: panicReadinessPct,
       progressLabel: packsGeneratedCount > 0 ? 'Active rescue ready' : 'Ready to generate',
       cta: 'Launch Exam Panic',
