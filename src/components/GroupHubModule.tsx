@@ -603,23 +603,31 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         {/* Center WhatsApp-Style Chat (group_messages) */}
         <section className="flex h-[540px] flex-col rounded-xl border border-slate-200 bg-white xl:col-span-7 dark:border-slate-800 dark:bg-[#111827]">
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5 dark:border-slate-800">
-            <div>
-              <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">
-                {currentGroup?.name}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Live Cohort Chat · Supabase Realtime · {Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length) + 1} online
-              </p>
-              <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                <MicOff className="h-3 w-3" />
-                Mic stays off in university + global rooms - talk in a private Live Room.
-              </p>
+          <div className="border-b border-slate-200 px-5 pt-3 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-2">
+              <button type="button" onClick={() => { setMembersOpen(true); void loadMembers(); }} title="View group members" className="group flex min-w-0 items-center gap-2 rounded-lg px-1 py-0.5 text-left hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <Users className="h-4 w-4 shrink-0 text-indigo-500" />
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-base font-bold text-slate-900 group-hover:underline dark:text-white">{currentGroup?.name}</span>
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">{members.length} members - {Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length) + 1} online - tap to view</span>
+                </span>
+              </button>
+              <span className="inline-flex shrink-0 items-center gap-1 font-mono text-xs font-semibold text-amber-600 tabular-nums dark:text-amber-400">
+                <Flame className="h-3.5 w-3.5" />
+                {profile.streakDays}d streak
+              </span>
             </div>
-            <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-amber-600 tabular-nums dark:text-amber-400">
-              <Flame className="h-3.5 w-3.5" />
-              {profile.streakDays}d streak
-            </span>
+            <div className="mt-2 flex items-center gap-1" role="tablist" aria-label="Group view">
+              {(['chat', 'files', 'messages'] as const).map((t) => (
+                <button key={t} type="button" role="tab" aria-selected={activeTab === t} onClick={() => setActiveTab(t)} className={`rounded-t-lg px-4 py-2 text-xs font-semibold transition-colors ${activeTab === t ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'}`}>
+                  {t === 'chat' ? 'Chat' : t === 'files' ? `Files (${resources.length})` : 'Messages'}
+                </button>
+              ))}
+              <span className="ml-auto hidden items-center gap-1 pb-1 text-[11px] text-slate-400 sm:inline-flex">
+                <MicOff className="h-3 w-3" />
+                Mic stays off here.
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-5">
