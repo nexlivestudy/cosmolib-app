@@ -3,27 +3,22 @@ import { createPortal } from 'react-dom';
 import { Check, Globe, Loader2, Search, X } from 'lucide-react';
 import { WORLD_LANGUAGES } from '../lib/languages';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useFitPanel } from '../hooks/useFitPanel';
 
 export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) => {
   const { lang, setLang, translating, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const btnRef = useRef<HTMLButtonElement | null>(null);
-  const [pos, setPos] = useState<{ top: number; right: number }>({ top: 60, right: 16 });
+  // App-wide rule: panel always fits the visible screen (bottom-sheet on phones).
+  const fit = useFitPanel(btnRef, open, { width: 380, height: 420 });
 
   useEffect(() => {
     if (!open) return;
-    const update = () => {
-      const r = btnRef.current?.getBoundingClientRect();
-      if (r) setPos({ top: Math.min(window.innerHeight - 420, r.bottom + 8), right: Math.max(8, window.innerWidth - r.right) });
-    };
-    update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('keydown', esc);
-    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true); document.removeEventListener('keydown', esc); };
-  }, [open ]);
+    return () => { document.removeEventListener('keydown', esc); };
+  }, [open]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -50,14 +45,15 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
         {translating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Globe className="h-3.5 w-3.5 text-indigo-500" />}
         <span className={compact ? 'hidden sm:inline' : ''}>{active.native}</span>
       </button>
-      {open && createPortal(
+      {open && fit && createPortal(
         <div className="fixed inset-0 z-[99999]" role="presentation">
           {/* backdrop - click anywhere to close, sits below panel but above everything else */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" onClick={() => setOpen(false)} />
-          {/* big panel - always in front of tabs, cards, everything */}
+          {/* panel geometry comes from useFitPanel: clamped dropdown on desktop,
+              centered bottom-sheet on phones - never cropped by the screen edge */}
           <div
-            className="absolute w-[min(92vw,380px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#111827]"
-            style={{ top: pos.top, right: pos.right, maxHeight: 'min(70vh, 420px)', display: 'flex', flexDirection: 'column' }}
+            className="absolute overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#111827]"
+            style={{ top: fit.top, left: fit.left, width: fit.width, maxHeight: fit.maxHeight, display: 'flex', flexDirection: 'column' }}
             role="listbox"
             aria-label="World languages"
           >
@@ -102,7 +98,7 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = ({ compact }) =
                 <p className="px-3 py-4 text-sm text-slate-500 dark:text-slate-400">No language found for “{q}”.</p>
               )}
             </div>
-            <p className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            <p className="border-p border-slate-100 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
               {t('Auto-translates whole app including motivations')}
             </p>
           </div>
