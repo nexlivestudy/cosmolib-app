@@ -264,3 +264,49 @@ export async function answerFollowByUsers(myId: string, requesterId: string, acc
     return respondFollowRequest(edge.id, accept, requesterId, '', myId, myName);
   } catch { return false; }
 }
+
+export interface ProfilePost {
+  id: string;
+  user_id: string;
+  caption: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+export interface PublicProfile {
+  id: string;
+  name: string;
+  bio: string;
+  avatarUrl: string | null;
+  streakDays: number;
+  branch: string;
+  institution: string;
+  online: boolean;
+  lastSeen: string | null;
+}
+
+export async function getPublicProfile(userId: string, onlineIds: string[] = []): Promise<PublicProfile | null> {
+  if (!supabase || !userId) return null;
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, display_name, bio, avatar_url, streak_days, branch, institution, last_seen')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    const p = data as Record<string, unknown>;
+    return {
+      id: String(p.id || userId),
+      name: String(p.display_name || 'Cosmo Scholar'),
+      bio: String(p.bio || ''),
+      avatarUrl: (p.avatar_url as string | null) || null,
+      streakDays: Number(p.streak_days || 0),
+      branch: String(p.branch || ''),
+      institution: String(p.institution || ''),
+      online: onlineIds.includes(String(p.id || '')),
+      lastSeen: (p.last_seen as string | null) || null,
+    };
+  } catch {
+    return null;
+  }
+}
