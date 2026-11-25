@@ -101,24 +101,51 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
   const [myReacts, setMyReacts] = useState<Record<string, string>>({});
   const [theme, setTheme] = useState<ChatThemeId>(() => loadTheme(myId, peer.id));
   const [showThemes, setShowThemes] = useState(false);
+  const [showDates, setShowDates] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const convoId = `${myId}_${peer.id}`;
   const [liveFeed, setLiveFeed] = useState(true);
+  const mergeServer = (latest: DirectMessage[]) => {
+    if (latest.length > 0) saveCachedThread(myId, peer.id, latest);
+    setMsgs((prev) => {
+      if (prev.length === 0) return latest;
+      const known = new Set(prev.map((x) => x.id));
+      const fresh = latest.filter((m) => !known.has(m.id));
+      return fresh.length ? [...prev, ...fresh] : prev;
+    });
+  };
   const pullLatest = async () => {
     try {
-      const latest = await listDMs(myId, peer.id);
+      const since = msgs.length ? msgs[msgs.length - 1].created_at : null;
+      const latest = await listDMsSince(myId, peer.id, since);
       if (latest.length === 0) return;
-      setMsgs((prev) => {
-        if (prev.length === 0) return latest;
-        const known = new Set(prev.map((x) => x.id));
-        const fresh = latest.filter((m) => !known.has(m.id));
-        return fresh.length ? [...prev, ...fresh] : prev;
-      });
+      mergeServer([...msgs, ...latest.filter((m) => !msgs.some((x) => x.id === m.id))]);
     } catch { /* polling is best-effort */ }
+  };
+  const scrollToDay = (day: string) => {
+    setShowDates(false);
+    requestAnimationFrame(() => {
+      document.getElementById(`dm-day-${day}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
   useEffect(() => {
     let live = true;
-    listDMs(myId, peer.id).then((m) => { if (live) setMsgs(m); }).catch(() => {});
-    return () => { live = false; };
+    setMsgs(loadCachedThread(myId, peer.id));
+    setQueued(loadOutbox(myId).filter((q) => q.receiverId === peer.id));
+    listDMs(myId, peer.id).then((m) => { if (live && m.length > 0) { setMsgs(m); saveCachedThread(myId, peer.id, m); } }).catch(() => {});
+    flushOutbox(myId).then((left) => {
+      if (!live) return;
+      setQueued(loadOutbox(myId).filter((q) => q.receiverId === peer.id));
+      if (left >= 0) void pullLatest();
+    }).catch(() => {});
+    const onOnline = () => {
+      void flushOutbox(myId).then(() => {
+        if (live) setQueued(loadOutbox(myId).filter((q) => q.receiverId === peer.id));
+      });
+    };
+    window.addEventListener('online', onOnline);
+    return () => { live = false; window.removeEventListener('online', onOnline); };
   }, [myId, peer.id]);
   useEffect(() => {
     if (!supabase || !myId) return;
