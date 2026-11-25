@@ -56,4 +56,56 @@ export function formatClock(iso: string): string {
   }
 }
 
-// __PART2__
+export async function fetchGroupMembers(groupId: string, onlineIds: string[], myId: string): Promise<RoomMember[]> {
+  if (!supabase || !groupId) return [];
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, display_name, streak_days, branch, institution, last_seen')
+    .contains('joined_group_ids', [groupId])
+    .limit(100);
+  if (error || !Array.isArray(data)) return [];
+  const online = new Set(onlineIds);
+  const members: RoomMember[] = (data as any[]).map((p) => ({
+    id: String(p.id || ''),
+    name: String(p.display_name || 'Cosmo Scholar'),
+    streakDays: Number(p.streak_days || 0),
+    branch: String(p.branch || ''),
+    institution: String(p.institution || ''),
+    online: online.has(String(p.id || '')),
+    lastSeen: (p.last_seen as string | null) || null,
+  })).filter((m) => m.id && m.id !== myId);
+  members.sort((a, b) => {
+    if (a.online !== b.online) return a.online ? -1 : 1;
+    return String(b.lastSeen || '').localeCompare(String(a.lastSeen || ''));
+  });
+  return members;
+}
+
+export async function heartbeat(userId: string, isLive: boolean): Promise<void> {
+  if (!supabase || !userId) return;
+  try {
+    await supabase.from('profiles').update({ last_seen: new Date().toISOString(), is_live: isLive }).eq('id', userId);
+  } catch { /* best-effort presence */ }
+}
+
+export type FollowState = 'none' | 'requested' | 'following' | 'followback' | 'mutual';
+
+export async function getFollowState(myId: string, otherId: string): Promise<FollowState> {
+  if (!supabase || !myId || !otherId || myId === otherId) return 'none';
+  try {
+    const { data } = await supabase.from('follows').select('follower_id,status').or(`and(follower_id.eq.${myId},followee_id.eq.${otherId}),and(follower_id.eq.${otherId},followee_id.eq.${myId})`);
+    const rows = (Array.isArray(data) ? data : []) as { follower_id: string; status: string }[];
+    const mine = rows.find((r) => r.follower_id === myId);
+    const theirs = rows.find((r) => r.follower_id === otherId);
+    const mineOk = mine?.status === 'accepted';
+    const theirsOk = theirs?.status === 'accepted';
+    if (mineOk && theirsOk) return 'mutual';
+    if (mine && mine.status === 'pending') return 'requested';
+    if (mineOk) return 'following';
+    if (theirs && theirs.status === 'pending') return 'followback';
+    if (theirsOk) return 'followback';
+    return 'none';
+  } catch { return 'none'; }
+}
+
+// __PART3__
