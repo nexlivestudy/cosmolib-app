@@ -271,4 +271,119 @@ export const ProfileScreen: React.FC<Props> = ({
                 )}
               </div>
 
-// __PART4__
+              {isMine && editing && (
+                <form onSubmit={handleSaveProfile} className="space-y-2 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+                  <div>
+                    <label htmlFor="profile-name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Display name</label>
+                    <input
+                      id="profile-name"
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="Your study handle"
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="profile-bio" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Bio (max 160)</label>
+                    <textarea
+                      id="profile-bio"
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value.slice(0, 160))}
+                      placeholder="e.g. GATE CS 2027 aspirant - OS + DBMS daily - open to late-night rooms"
+                      rows={3}
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
+                    />
+                    <p className="mt-0.5 text-right text-[11px] text-slate-400 tabular-nums">{editBio.length}/160</p>
+                  </div>
+                  <button type="submit" disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
+                    <Check className="h-3.5 w-3.5" /> {saving ? 'Saving...' : 'Save profile'}
+                  </button>
+                </form>
+              )}
+
+              <div className="border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Posts ({posts.length})</h4>
+                  {isMine && (
+                    <button
+                      type="button"
+                      onClick={() => setComposerOpen((v) => !v)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-cyan-600 dark:hover:bg-cyan-500"
+                    >
+                      <ImagePlus className="h-3.5 w-3.5" /> New post
+                    </button>
+                  )}
+                </div>
+                {isMine && composerOpen && (
+                  <form onSubmit={handlePost} className="mt-3 space-y-2 rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                    <textarea
+                      value={caption}
+                      onChange={(e) => setCaption(e.target.value.slice(0, 500))}
+                      placeholder="Share a win, formula sheet, or study setup..."
+                      rows={3}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
+                    />
+                    {photoPreview && <img src={photoPreview} alt="Post preview" className="max-h-48 w-full rounded-lg object-cover" />}
+                    <div className="flex items-center gap-2">
+                      <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+                        <ImagePlus className="h-3.5 w-3.5" /> {photoFile ? 'Change photo' : 'Add photo'}
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = '';
+                            handlePhotoPick(f);
+                          }}
+                        />
+                      </label>
+                      <button type="submit" disabled={posting} className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
+                        {posting ? 'Posting...' : 'Post'}
+                      </button>
+                    </div>
+                    {postError && <p role="alert" className="text-xs font-medium text-red-600 dark:text-red-400">{postError}</p>}
+                  </form>
+                )}
+                {posts.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                    {isMine ? 'No posts yet - share your first study win above.' : 'No posts yet.'}
+                  </p>
+                ) : (
+                  <div className="mt-3 grid grid-cols-3 gap-1.5">
+                    {posts.map((p) => (
+                      <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                        {p.image_url ? (
+                          <img src={p.image_url} alt={p.caption.slice(0, 60) || 'Study post'} title={p.caption} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center p-2 text-center text-[11px] leading-snug text-slate-600 dark:text-slate-300">
+                            {p.caption.slice(0, 120)}
+                          </div>
+                        )}
+                        {isMine && (
+                          <button
+                            type="button"
+                            onClick={() => void handleDeletePost(p.id)}
+                            aria-label="Delete post"
+                            className="absolute right-1 top-1 hidden rounded-full bg-black/60 p-1 text-white group-hover:block"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          {!loading && !pub && (
+            <p className="p-6 text-center text-xs text-slate-500">Could not load this profile.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
