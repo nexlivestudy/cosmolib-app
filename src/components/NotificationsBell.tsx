@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bell, Check, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import type { NotificationItem } from '../types';
 import { answerFollowByUsers, listNotifications, markNotificationsRead } from '../lib/social';
+import { useFitPanel } from '../hooks/useFitPanel';
 
 interface Props {
   userId: string;
@@ -14,6 +16,9 @@ export const NotificationsBell: React.FC<Props> = ({ userId, userName, onChanged
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const btnWrapRef = useRef<HTMLDivElement | null>(null);
+  // App-wide rule: panel always fits the visible screen (bottom-sheet on phones).
+  const fit = useFitPanel(btnWrapRef, open, { width: 340, height: 420 });
   useEffect(() => {
     if (!supabase || !userId) return;
     listNotifications(userId, 30).then(setItems).catch(() => {});
@@ -44,16 +49,21 @@ export const NotificationsBell: React.FC<Props> = ({ userId, userName, onChanged
     } finally { setBusyId(null); }
   };
   return (
-    <div className="relative">
+    <div className="relative" ref={btnWrapRef}>
       <button type="button" onClick={openPanel} aria-label="Notifications" className="relative inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-[#0B0F19] dark:text-slate-200 dark:hover:bg-slate-800">
         <Bell className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Alerts</span>
+        |span className="hidden sm:inline">Alerts</span>
         {unread > 0 && (
           <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? '9+' : unread}</span>
         )}
       </button>
-      {open && (
-        <div className="cosmo-popover-layer absolute right-0 top-full z-[99990] mt-2 w-80 max-w-[90vw] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-[#111827]">
+      {open && fit && createPortal(
+        <div className="fixed inset-0 z-[99990]" role="presentation">
+          <div className="absolute inset-0 bg-transparent" onClick={() => setOpen(false)} />
+        <div
+          className="absolute overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-[#111827]"
+          style={{ top: fit.top, left: fit.left, width: fit.width, maxHeight: fit.maxHeight, display: 'flex', flexDirection: 'column' }}
+        >
           <div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
           </div>
@@ -77,6 +87,8 @@ export const NotificationsBell: React.FC<Props> = ({ userId, userName, onChanged
             ))}
           </div>
         </div>
+        </div>,
+        document.body
       )}
     </div>
   );
