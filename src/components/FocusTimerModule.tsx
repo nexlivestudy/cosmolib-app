@@ -135,7 +135,7 @@ export const FocusTimerModule: React.FC<FocusTimerModuleProps> = ({
 
   // Schedule Form State (From HH:MM:SS -> To HH:MM:SS)
   const [editingAlarmId, setEditingAlarmId] = useState<string | null>(null);
-  const [formLabel, setFormLabel] = useState('Deep Study Sprint');
+  const [formLabel, setFormLabel] = useState('');
   const [formStartTime, setFormStartTime] = useState(() => addSecondsToClock(new Date(), 300));
   const [formEndTime, setFormEndTime] = useState(() => addSecondsToClock(new Date(), 3900));
   const [formTone, setFormTone] = useState<AlarmToneId>('sunrise_bell');
