@@ -91,15 +91,17 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   }, [countrySearch]);
 
   const availableDegrees = useMemo(
-    () => getDegreeLevelsForStream(streamCategory),
+    () => (streamCategory ? getDegreeLevelsForStream(streamCategory) : []),
     [streamCategory]
   );
   const availableBranches = useMemo(
-    () => getBranchesForDegree(streamCategory, degreeLevel),
+    () =>
+      streamCategory && degreeLevel ? getBranchesForDegree(streamCategory, degreeLevel) : [],
     [streamCategory, degreeLevel]
   );
   const availableInstitutions = useMemo(
-    () => getInstitutionsForDegree(streamCategory, degreeLevel),
+    () =>
+      streamCategory && degreeLevel ? getInstitutionsForDegree(streamCategory, degreeLevel) : [],
     [streamCategory, degreeLevel]
   );
 
@@ -115,7 +117,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     sanitizeUserText(customInstitution, 100) ||
     (institution !== CUSTOM_OPTION ? sanitizeUserText(institution, 100) : '');
 
-  const isStep1Valid = displayName.trim().length > 0;
+  const isStep1Valid = displayName.trim().length > 0 && selectedCountry !== null;
+  const isStep2Valid = dailyTarget !== null;
+  const isStep3Valid = vibe !== null;
   const isStep4Valid = Boolean(degreeLevel && resolvedBranch && resolvedInstitution);
 
   const { universityBranchGroup, globalBranchGroup } = useMemo(
@@ -123,10 +127,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       buildMatchedGroups({
         institution: resolvedInstitution || 'Independent Cohort',
         branch: resolvedBranch || degreeLevel || 'General Studies',
-        country: selectedCountry.name,
-        streamCategory,
+        country: selectedCountry?.name || 'Independent Cohort',
+        streamCategory: streamCategory ?? 'Custom Self-Study',
       }),
-    [resolvedInstitution, resolvedBranch, degreeLevel, selectedCountry.name, streamCategory]
+    [resolvedInstitution, resolvedBranch, degreeLevel, selectedCountry, streamCategory]
   );
 
   const handleSelectStream = (cat: StreamCategory) => {
