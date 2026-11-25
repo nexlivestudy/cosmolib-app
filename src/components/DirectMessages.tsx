@@ -94,7 +94,8 @@ export const DirectMessages: React.FC<DMProps> = ({ myId, myName, peer, onPeerCh
 };
 
 const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBack: () => void }> = ({ myId, peer, onBack }) => {
-  const [msgs, setMsgs] = useState<DirectMessage[]>([]);
+  const [msgs, setMsgs] = useState<DirectMessage[]>(() => loadCachedThread(myId, peer.id));
+  const [queued, setQueued] = useState<QueuedMessage[]>(() => loadOutbox(myId).filter((q) => q.receiverId === peer.id));
   const [input, setInput] = useState('');
   const [reacts, setReacts] = useState<Record<string, Record<string, number>>>({});
   const [myReacts, setMyReacts] = useState<Record<string, string>>({});
