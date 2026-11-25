@@ -91,6 +91,7 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
   const [parsingField, setParsingField] = useState<PanicInputField | null>(null);
   const [dragTarget, setDragTarget] = useState<PanicInputField | null>(null);
 
+  const hasMarksInput = totalMarksInput.trim().length > 0;
   const totalMarks = deriveTotalMarksNumber(totalMarksInput);
 
   const [pack, setPack] = useState<MasterRescuePack | null>(null);
@@ -441,10 +442,16 @@ export const ExamPanicModule: React.FC<ExamPanicModuleProps> = ({ byok, onPackGe
             </h1>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Feed your syllabus, rough notes, and PYQs to generate a single exam rescue pack plus{' '}
-              <span className="font-mono font-semibold text-slate-900 tabular-nums dark:text-cyan-300">
-                {plannedQuestionCount} practice questions
-              </span>{' '}
-              ({totalMarks >= 50 ? 'marks ≥ 50 → 40 Qs' : 'marks < 50 → 20 Qs'}).
+              {hasMarksInput ? (
+                <>
+                  <span className="font-mono font-semibold text-slate-900 tabular-nums dark:text-cyan-300">
+                    {plannedQuestionCount} practice questions
+                  </span>{' '}
+                  ({totalMarks >= 50 ? 'marks ≥ 50 → 40 Qs' : 'marks < 50 → 20 Qs'}).
+                </>
+              ) : (
+                <>a tailored practice set (enter total marks above to auto-pick 20 or 40 Qs).</>
+              )}
             </p>
           </div>
         </div>
