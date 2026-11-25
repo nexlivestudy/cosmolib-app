@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCheck, MessageCircle, Palette, Reply, Send } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, CalendarDays, CheckCheck, MessageCircle, Palette, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { DirectMessage, RoomMember } from '../types';
-import { canChatWith, formatClock, listConversations, listDMs, loadTheme, saveTheme, sendDM, themeFor, type ChatThemeId, type ConversationPreview, CHAT_THEMES } from '../lib/social';
+import { canChatWith, flushOutbox, formatClock, listConversations, listDMs, listDMsSince, loadCachedConvos, loadCachedThread, loadOutbox, loadTheme, queueOfflineMessage, saveCachedConvos, saveCachedThread, saveTheme, sectionByDay, sendDM, themeFor, threadDays, type ChatThemeId, type ConversationPreview, type QueuedMessage, CHAT_THEMES } from '../lib/social';
 
 interface DMProps {
   myId: string;
