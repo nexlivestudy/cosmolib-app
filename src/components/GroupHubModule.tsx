@@ -28,6 +28,7 @@ import type {
   UserProfile,
 } from '../types';
 import { sanitizeHttpsUrl, sanitizeUserText, validateVaultFile } from '../utils/security';
+import { CosmoSelect } from './ui/CosmoSelect';
 import { canSendBuddyAlert } from '../utils/studyLogic';
 
 interface GroupHubModuleProps {
@@ -764,17 +765,17 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             </div>
 
             <div className="mt-3 flex items-center gap-2">
-              <select
+              <CosmoSelect
                 value={resourceCategory}
-                onChange={(e) => setResourceCategory(e.target.value as GroupResourceItem['category'])}
-                aria-label="Resource category"
-                className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-900 dark:border-slate-700 dark:bg-[#0B0F19] dark:text-white"
-              >
-                <option value="PDF Notes">PDF Notes</option>
-                <option value="PYQ Paper">PYQ Paper</option>
-                <option value="Formula Sheet">Formula Sheet</option>
-                <option value="Lecture Deck">Lecture Deck</option>
-              </select>
+                onChange={(v) => setResourceCategory(v as GroupResourceItem['category'])}
+                ariaLabel="Resource category"
+                options={[
+                  { value: 'PDF Notes', label: 'PDF Notes' },
+                  { value: 'PYQ Paper', label: 'PYQ Paper' },
+                  { value: 'Formula Sheet', label: 'Formula Sheet' },
+                  { value: 'Lecture Deck', label: 'Lecture Deck' },
+                ]}
+              />
 
               <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-cyan-600 dark:hover:bg-cyan-500">
                 <Upload className="h-3.5 w-3.5" />
