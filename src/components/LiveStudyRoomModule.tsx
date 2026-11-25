@@ -117,10 +117,55 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
       const c = canvasRef.current;
       if (c) c.getContext('2d')?.clearRect(0, 0, c.width, c.height);
     });
-    ch.on('broadcast', { event: 'notes' }, ({ payload }) => {
-      setNotes(String((payload as { text: string }).text || '').slice(0, 20000));
+    ch.on('broadcast', { event: 'typing' }, ({ payload }) => {
+      const name = String((payload as { name?: string }).name || '');
+      if (name && name !== profile.displayName) {
+        setTypingUsers((prev) => (prev.includes(name) ? prev : [...prev, name]));
+        window.setTimeout(() => {
+          setTypingUsers((prev) => prev.filter((n) => n !== name));
+        }, 2500);
+      }
     });
-    ch.subscribe();
+    ch.on('broadcast', { event: 'reaction' }, ({ payload }) => {
+      const p = payload as { msgId?: string; emoji?: string };
+      if (!p.msgId || !p.emoji) return;
+      setReactions((prev) => ({
+        ...prev,
+        [p.msgId as string]: {
+          ...(prev[p.msgId as string] || {}),
+          [p.emoji as string]: ((prev[p.msgId as string] || {})[p.emoji as string] || 0) + 1,
+        },
+      }));
+    });
+    ch.on('broadcast', { event: 'reaction-remove' }, ({ payload }) => {
+      const p = payload as { msgId?: string; emoji?: string };
+      if (!p.msgId || !p.emoji) return;
+      setReactions((prev) => ({
+        ...prev,
+        [p.msgId as string]: {
+          ...(prev[p.msgId as string] || {}),
+          [p.emoji as string]: Math.max(0, ((prev[p.msgId as string] || {})[p.emoji as string] || 1) - 1),
+        },
+      }));
+    });
+    ch.on('presence', { event: 'sync' }, () => {
+      const state = ch.presenceState<{ name: string }>();
+      const names: string[] = [];
+      Object.values(state).forEach((entries) => {
+        const first = (entries as { name: string }[])[0];
+        if (first?.name) names.push(first.name);
+      });
+      setOnlineMembers(Array.from(new Set(names)));
+    });
+    ch.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        try {
+          await ch.track({ userId: profile.id, name: profile.displayName });
+        } catch {
+          /* presence best-effort */
+        }
+      }
+    });
     channelRef.current = ch;
     return () => {
       supabase.removeChannel(ch);
@@ -248,10 +293,12 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
       text,
       isBot: false,
       createdAt: new Date().toISOString(),
+      replyToId: replyToId || undefined,
     };
     setChat((prev) => [...prev, msg]);
     channelRef.current?.send({ type: 'broadcast', event: 'chat', payload: msg });
     setChatInput('');
+    setReplyToId(null);
     if (text.toLowerCase().startsWith('@cosmo')) {
       const q = text.replace(/^@cosmo\s*/i, '') || text;
       setBotBusy(true);
