@@ -438,54 +438,50 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
     }
   };
 
-  const handleToggleFollowBuddy = async (buddyId: string) => {
-    const target = buddies.find((b) => b.id === buddyId);
-    if (!target) return;
-    const nextFollowing = !target.isFollowing;
-    setBuddies((prev) =>
-      prev.map((b) => (b.id === buddyId ? { ...b, isFollowing: nextFollowing } : b))
-    );
-
-    if (supabase) {
-      if (nextFollowing) {
-        await supabase.from('buddy_follows').insert({
-          follower_id: profile.id,
-          followed_id: buddyId,
-        });
-      } else {
-        await supabase
-          .from('buddy_follows')
-          .delete()
-          .eq('follower_id', profile.id)
-          .eq('followed_id', buddyId);
+  // Load real group members (DB profiles) merged with live presence; online first.
+  const loadMembers = async (showLoading = true) => {
+    if (!currentGroup) return;
+    if (showLoading) setMembersLoading(true);
+    try {
+      const onlineIds = presencePeers.map((p) => p.userId);
+      const list = await fetchGroupMembers(currentGroup.id, onlineIds, profile.id);
+      const known = new Set(list.map((m) => m.id));
+      for (const p of presencePeers) {
+        if (p.userId === profile.id || known.has(p.userId)) continue;
+        known.add(p.userId);
+        list.unshift({ id: p.userId, name: p.name || 'Cosmo Scholar', streakDays: 0, branch: '', institution: '', online: true, lastSeen: null });
       }
+      setMembers(list);
+      const convos = await listConversations(profile.id, profile.displayName);
+      setConnectedIds(new Set(convos.map((c) => c.peerId)));
+    } finally {
+      if (showLoading) setMembersLoading(false);
     }
   };
 
-  const handleSendStudyAlert = (buddyId: string) => {
-    const target = buddies.find((b) => b.id === buddyId);
-    if (!target) return;
+  // Heartbeat: publish my live presence + last-seen for the members list.
+  useEffect(() => {
+    if (!supabase || !profile.id) return;
+    let stopped = false;
+    const beat = () => { if (!stopped) void heartbeat(profile.id, camActive); };
+    beat();
+    const timer = window.setInterval(beat, 60000);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, [profile.id, camActive]);
 
-    const decision = canSendBuddyAlert({
-      lastAlertSentAt: target.lastAlertSentAt,
-      nowMs: Date.now(),
-      isUltraBlockActive,
-    });
+  // Refresh members when the room or presence changes.
+  useEffect(() => {
+    if (!currentGroup) return;
+    void loadMembers(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGroup?.id, presencePeers.length]);
 
-    if (!decision.allowed) {
-      if (decision.reason === 'ultra_block_suppressed') {
-        setBuddyNotice('Blocked by Schedule — Alerts are suppressed while Meditation Strict Mode is active.');
-      } else {
-        const minsLeft = Math.ceil(decision.remainingMs / 60000);
-        setBuddyNotice(`3-hour cooldown active for ${target.name} (${minsLeft}m remaining).`);
-      }
-      return;
-    }
+  const canMessage = (peerId: string): boolean => connectedIds.has(peerId);
 
-    setBuddies((prev) =>
-      prev.map((b) => (b.id === buddyId ? { ...b, lastAlertSentAt: Date.now() } : b))
-    );
-    setBuddyNotice(`Sent silent study start nudge to ${target.name}. Next alert available in 3 hours.`);
+  const openDirectChat = (member: RoomMember) => {
+    setDmPeer(member);
+    setMembersOpen(false);
+    setActiveTab('messages');
   };
 
   return (
