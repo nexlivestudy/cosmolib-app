@@ -764,20 +764,14 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
           </form>
         </section>
 
-        {/* Right Panel: Telegram-Style Vault (group_resources + nexlive-vault) + 1-to-1 Study Buddies */}
+        {/* Right Panel: members-first social rail */}
         <aside className="space-y-5 xl:col-span-5">
-          {/* Telegram-Style Resource Vault */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-[#111827]">
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">
-                  Telegram-Style Resource Vault
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  nexlive-vault · PDF/JPG/PNG/MP3/MP4 · 50 MB max
-                </p>
-              </div>
+              <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">Online now</h2>
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{Math.max(0, presencePeers.filter((p) => p.userId !== profile.id).length) + 1} here</span>
             </div>
+            <div className="mt-3 max-h-56 space-y-1 overflow-y-auto">
 
             <div className="mt-3 flex items-center gap-2">
               <CosmoSelect
@@ -867,7 +861,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
               </div>
             </div>
 
-            {buddyNotice && (
+            {(false as boolean) && buddyNotice && (
               <p role="status" className="mt-2.5 text-xs font-medium text-cyan-700 dark:text-cyan-400">
                 {buddyNotice}
               </p>
