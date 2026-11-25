@@ -4,11 +4,9 @@ import {
   CameraOff,
   CheckCheck,
   Download,
-  EyeOff,
   FileText,
   Flame,
   MicOff,
-  PictureInPicture2,
   Reply,
   Send,
   Upload,
@@ -26,7 +24,7 @@ import type {
 } from '../types';
 import { sanitizeHttpsUrl, sanitizeUserText, validateVaultFile } from '../utils/security';
 import { CosmoSelect } from './ui/CosmoSelect';
-import { GroupMembers } from './GroupMembers';
+import { MembersDrawer } from './GroupMembers';
 import { NotificationsBell } from './NotificationsBell';
 import { DirectMessages } from './DirectMessages';
 import { fetchGroupMembers, heartbeat, listConversations } from '../lib/social';
@@ -763,6 +761,17 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             </button>
           </form>
         </section>
+
+        <MembersDrawer
+          open={membersOpen}
+          groupName={currentGroup?.name || 'Study Group'}
+          members={members}
+          loading={membersLoading}
+          me={{ id: profile.id, name: profile.displayName }}
+          canMessageWith={canMessage}
+          onMessage={openDirectChat}
+          onClose={() => setMembersOpen(false)}
+        />
 
         {/* Right Panel: members-first social rail */}
         <aside className="space-y-5 xl:col-span-5">
