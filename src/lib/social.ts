@@ -310,3 +310,124 @@ export async function getPublicProfile(userId: string, onlineIds: string[] = [])
     return null;
   }
 }
+
+export async function updateMyProfile(
+  userId: string,
+  patch: { display_name?: string; bio?: string; avatar_url?: string | null }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!supabase || !userId) return { ok: false, error: 'Not signed in.' };
+  const clean: Record<string, unknown> = {};
+  if (patch.display_name !== undefined) {
+    const n = patch.display_name.trim().slice(0, 60);
+    if (!n) return { ok: false, error: 'Display name cannot be empty.' };
+    clean.display_name = n;
+  }
+  if (patch.bio !== undefined) clean.bio = patch.bio.slice(0, 160);
+  if (patch.avatar_url !== undefined) clean.avatar_url = patch.avatar_url;
+  try {
+    const { error } = await supabase.from('profiles').update(clean).eq('id', userId);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Save failed.' };
+  }
+}
+
+export async function listPosts(userId: string, limit = 24): Promise<ProfilePost[]> {
+  if (!supabase || !userId) return [];
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error || !Array.isArray(data)) return [];
+    return data as ProfilePost[];
+  } catch {
+    return [];
+  }
+}
+
+export async function createPost(
+  userId: string,
+  caption: string,
+  imageUrl: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  if (!supabase || !userId) return { ok: false, error: 'Not signed in.' };
+  const text = (caption || '').trim().slice(0, 500);
+  if (!text && !imageUrl) return { ok: false, error: 'Write a caption or add a photo.' };
+  try {
+    const { error } = await supabase
+      .from('posts')
+      .insert({ user_id: userId, caption: text, image_url: imageUrl });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Post failed.' };
+  }
+}
+
+export async function deletePost(userId: string, postId: string): Promise<boolean> {
+  if (!supabase || !userId || !postId) return false;
+  try {
+    const { error } = await supabase.from('posts').delete().eq('id', postId).eq('user_id', userId);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+export interface FollowOp {
+  ok: boolean;
+  error?: string;
+  state: FollowStatus;
+}
+
+export async function sendFollowRequestEx(
+  myId: string,
+  myName: string,
+  themId: string
+): Promise<FollowOp> {
+  if (!supabase || !myId || !themId || myId === themId)
+    return { ok: false, error: 'Invalid follow target.', state: 'none' };
+  const safeName = myName.slice(0, 60) || 'A scholar';
+  try {
+    const { error } = await supabase.from('follows').upsert(
+      { follower_id: myId, followee_id: themId, status: 'pending' },
+      { onConflict: 'follower_id,followee_id' }
+    );
+    if (error) return { ok: false, error: error.message, state: 'none' };
+    const { error: nerr } = await supabase.from('notifications').insert({
+      user_id: themId,
+      type: 'follow_request',
+      title: 'New follow request',
+      body: `${safeName} wants to connect with you.`,
+      actor_id: myId,
+      actor_name: safeName,
+    });
+    if (nerr) return { ok: true, error: 'Request sent, but the notification failed: ' + nerr.message, state: 'requested' };
+    return { ok: true, state: 'requested' };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Request failed.', state: 'none' };
+  }
+}
+
+export async function withdrawFollowRequest(
+  myId: string,
+  themId: string
+): Promise<{ ok: boolean; error?: string }> {
+  if (!supabase || !myId || !themId) return { ok: false, error: 'Not signed in.' };
+  try {
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', myId)
+      .eq('followee_id', themId)
+      .eq('status', 'pending');
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Cancel failed.' };
+  }
+}
