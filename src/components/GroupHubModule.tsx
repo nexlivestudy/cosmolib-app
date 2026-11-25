@@ -874,48 +874,21 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             )}
 
             <div className="mt-3 divide-y divide-slate-200 dark:divide-slate-800">
-              {buddies.map((buddy) => (
-                <div key={buddy.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-xs font-semibold text-slate-900 dark:text-white">
-                      {buddy.name}
-                    </div>
-                    <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                      {buddy.institution} · {buddy.streakDays}d streak ·{' '}
-                      {buddy.isStudyingNow ? 'Studying now' : 'Offline'}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleFollowBuddy(buddy.id)}
-                      className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[11px] font-semibold ${
-                        buddy.isFollowing
-                          ? 'border border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-200'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-500'
-                      }`}
-                    >
-                      {buddy.isFollowing ? (
-                        <>
-                          <UserCheck className="h-3 w-3" /> Following
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-3 w-3" /> Follow
-                        </>
-                      )}
-                    </button>
-                    {buddy.isFollowing && (
-                      <button
-                        type="button"
-                        onClick={() => handleSendStudyAlert(buddy.id)}
-                        aria-label={`Send study alert to ${buddy.name}`}
-                        className="rounded-md border border-slate-300 p-1.5 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                      >
-                        <Bell className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
+              {(members.length === 0 && !membersLoading) && (
+                <p className="py-5 text-center text-xs text-slate-500 dark:text-slate-400">No members yet. Share this group to invite peers.</p>
+              )}
+              {members.map((m) => (
+                <div key={m.id} className="flex items-center justify-between gap-3 py-3">
+                  <button type="button" onClick={() => setMembersOpen(true)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+                    <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-xs font-bold text-white">
+                      {m.name.slice(0, 2).toUpperCase()}
+                      <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-[#111827] ${m.online ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">{m.name}</span>
+                      <span className="block truncate text-[11px] text-slate-500 dark:text-slate-400">{m.online ? 'Live now' : (m.lastSeen ? 'last seen ' + m.lastSeen.slice(0, 16).replace('T', ' ') : 'new here')}</span>
+                    </span>
+                  </button>
                 </div>
               ))}
             </div>
