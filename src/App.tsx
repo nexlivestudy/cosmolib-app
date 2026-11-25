@@ -156,7 +156,7 @@ export default function App() {
           const loaded: UserProfile = {
             id: authUser.id,
             email: authUser.email,
-            displayName: data.display_name || authUser.email.split('@')[0],
+            displayName: data.display_name || '',
             country: data.country || 'India',
             countryCode: data.country_code || 'IN',
             dailyTargetHours: data.daily_target_hours || 4,
@@ -187,7 +187,7 @@ export default function App() {
             profile: UserProfile;
             customGroups?: StudyGroup[];
           };
-          if (parsed.profile?.onboardingComplete) {
+          if (parsed.profile?.onboardingComplete && parsed.profile.displayName?.trim()) {
             setProfile(parsed.profile);
             setCustomGroups(parsed.customGroups || []);
             setActiveGroupId(parsed.profile.primaryGroupId);
@@ -412,8 +412,8 @@ export default function App() {
     );
   }
 
-  // Gate 2: Country-First Dynamic Onboarding Wizard for new users
-  if (!profile || !profile.onboardingComplete) {
+  // Gate 2: Country-First Dynamic Onboarding Wizard for new users (or missing display name)
+  if (!profile || !profile.onboardingComplete || !profile.displayName.trim()) {
     return (
       <>
         <OnboardingWizard
