@@ -28,7 +28,7 @@ import { OfflineIndicator, PWAInstallButton } from './components/PWAInstallButto
 import { LanguageSelector } from './components/LanguageSelector';
 import { StudyFoldersModule } from './components/StudyFoldersModule';
 import { CosmolibLogoMark, WorkspaceSkeletonLoader } from './components/ui/CosmolibPrimitives';
-import { EXPLORE_STUDY_GROUPS, INITIAL_STUDY_FOLDERS } from './data/catalog';
+import { EXPLORE_STUDY_GROUPS } from './data/catalog';
 import { useTheme } from './hooks/useTheme';
 import { AnimatedBackground } from './components/AnimatedBackground';
 import { loadBYOKConfig, saveBYOKConfig } from './lib/aiClient';
@@ -52,7 +52,9 @@ export default function App() {
   const [authUser, setAuthUser] = useState<{ id: string; email: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [customGroups, setCustomGroups] = useState<StudyGroup[]>([]);
-  const [folders, setFolders] = useState<StudyFolder[]>(INITIAL_STUDY_FOLDERS);
+  // Empty-first rule: every user starts with zero folders and adds their own.
+  // Any legacy cached demo folder (folder-os-kernels) is filtered out on load.
+  const [folders, setFolders] = useState<StudyFolder[]>([]);
   const [packsGeneratedCount, setPacksGeneratedCount] = useState<number>(0);
   const [activeModule, setActiveModule] = useState<ActiveModule>('dashboard');
   const [activeGroupId, setActiveGroupId] = useState<string>('');
@@ -88,7 +90,7 @@ export default function App() {
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, []);
 
-  // Load verified Supabase session ONLY — no auto-login or backdoor
+  // Load verified Supabase session ONLY â no auto-login or backdoor
   useEffect(() => {
     let mounted = true;
     if (!supabase) {
@@ -135,7 +137,16 @@ export default function App() {
       try {
         const cachedFolders = localStorage.getItem(`${FOLDERS_CACHE_PREFIX}${authUser.id}`);
         if (cachedFolders) {
-          setFolders(JSON.parse(cachedFolders) as StudyFolder[]);
+          try {
+            const parsed = JSON.parse(cachedFolders) as StudyFolder[];
+            // Drop the old built-in demo folder; keep only the user's own folders.
+            const own = Array.isArray(parsed)
+              ? parsed.filter((f) => f && f.id !== 'folder-os-kernels')
+              : [];
+            setFolders(own);
+          } catch {
+            setFolders([]);
+          }
         }
         const savedPacks = Number(localStorage.getItem(`${PACKS_COUNT_PREFIX}${authUser.id}`) || '0');
         if (Number.isFinite(savedPacks) && savedPacks >= 0) {
@@ -358,7 +369,7 @@ export default function App() {
           id: `folder-${folder.id}`,
           kind: 'Folder',
           label: folder.name,
-          sub: `${folder.subjectTag} · ${folder.resources.length} sources`,
+          sub: `${folder.subjectTag} Â· ${folder.resources.length} sources`,
           onSelect: () => {
             setActiveModule('folders');
             setGlobalSearch('');
@@ -374,7 +385,7 @@ export default function App() {
           id: `grp-${grp.id}`,
           kind: 'Group',
           label: grp.name,
-          sub: `${grp.branch} · ${grp.activeCams} cams live`,
+          sub: `${grp.branch} Â· ${grp.activeCams} cams live`,
           onSelect: () => {
             handleOpenGroup(grp.id);
             setGlobalSearch('');
@@ -481,7 +492,7 @@ export default function App() {
                 {profile.displayName}
               </div>
               <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                {profile.institution} · {profile.countryCode}
+                {profile.institution} Â· {profile.countryCode}
               </div>
             </div>
           </div>
@@ -554,7 +565,7 @@ export default function App() {
                     {profile.displayName}
                   </div>
                   <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                    {profile.streakDays}d streak · {profile.countryCode}
+                    {profile.streakDays}d streak Â· {profile.countryCode}
                   </div>
                 </div>
               </div>
@@ -712,7 +723,7 @@ export default function App() {
                       {profile.institution}
                     </div>
                     <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">
-                      {profile.branch} · {profile.countryCode}
+                      {profile.branch} Â· {profile.countryCode}
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 font-mono text-xs tabular-nums dark:border-slate-800">
                       <span className="text-amber-600 dark:text-amber-300">{profile.streakDays}d streak</span>
