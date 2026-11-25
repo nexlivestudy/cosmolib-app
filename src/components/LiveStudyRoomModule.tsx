@@ -528,18 +528,68 @@ export const LiveStudyRoomModule: React.FC<Props> = ({ profile, byok }) => {
 
             <div className="cosmo-card p-4">
               <h3 className="text-sm font-semibold">Room chat + @cosmo AI bot</h3>
+              <p className="mt-0.5 text-[11px] text-slate-500">Private room - mic + voice notes allowed here. {onlineMembers.length > 0 ? `${onlineMembers.length} online: ${onlineMembers.slice(0, 4).join(', ')}` : 'Only you here - share the room to invite peers.'}</p>
               <div className="mt-2 max-h-64 space-y-2 overflow-y-auto">
-                {chat.map((m) => (
-                  <div key={m.id} className={`rounded-lg p-2 text-xs ${m.isBot ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'bg-slate-50 dark:bg-slate-800/60'}`}>
-                    <span className="font-semibold">{m.author}: </span>{m.text}
-                  </div>
-                ))}
-                {botBusy && <p className="text-xs text-slate-500">COSMO thinking…</p>}
+                {chat.map((m) => {
+                  const quoted = m.replyToId ? chat.find((x) => x.id === m.replyToId) : undefined;
+                  const msgReacts = reactions[m.id] || {};
+                  return (
+                    <div key={m.id} className={`rounded-lg p-2 text-xs ${m.isBot ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'bg-slate-50 dark:bg-slate-800/60'}`}>
+                      <span className="font-semibold">{m.author}: </span>
+                      <span className="ml-1 font-mono text-[10px] opacity-60">{formatTime(m.createdAt)}</span>
+                      {quoted && (
+                        <div className="mt-1 truncate rounded-md border-l-2 border-indigo-400 bg-white/60 px-2 py-1 text-[11px] italic dark:bg-black/20">
+                          Replying to {quoted.author}: {(quoted.text || '').slice(0, 80)}
+                        </div>
+                      )}
+                      <span>{m.text}</span>
+                      {m.audioUrl && (
+                        <audio controls src={m.audioUrl} className="mt-1 w-full" />
+                      )}
+                      {!m.isBot && (
+                        <div className="mt-1 flex items-center gap-1">
+                          {['\xf0\x9f\x91\x8d', '\xe2\x9d\xa4', '\xf0\x9f\x98\x82'].map((emoji) => {
+                            const count = msgReacts[emoji] || 0;
+                            const active = myReactions[m.id] === emoji;
+                            return (
+                              <button key={emoji} type="button" onClick={() => toggleReaction(m.id, emoji)} title={active ? 'Remove reaction' : 'React'} className={`rounded-full px-1.5 py-0.5 text-[11px] leading-none ${active ? 'bg-indigo-200 dark:bg-indigo-500/30 scale-110' : 'opacity-60 hover:opacity-100'}`}>
+                                {emoji}{count > 0 && <span className="ml-0.5 font-mono">{count}</span>}
+                              </button>
+                            );
+                          })}
+                          <button type="button" onClick={() => setReplyToId(m.id)} title="Reply" aria-label={`Reply to ${m.author}`} className="rounded-full p-1 opacity-60 hover:opacity-100">
+                            <Reply className="h-3 w-3" />
+                          </button>
+                          <span className="ml-auto inline-flex items-center gap-0.5 opacity-70" title="Delivered to room">
+                            <CheckCheck className="h-3 w-3" />
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {botBusy && <p className="text-xs text-slate-500">COSMO thinking\xe2\x80\xa6</p>}
               </div>
+              {replyToId && (() => {
+                const target = chat.find((x) => x.id === replyToId);
+                return (
+                  <div className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] dark:bg-slate-800">
+                    <span className="truncate">Replying to {target ? `${target.author}: ${(target.text || '').slice(0, 70)}` : 'message'}...</span>
+                    <button type="button" onClick={() => setReplyToId(null)} aria-label="Cancel reply" className="rounded p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700">x</button>
+                  </div>
+                );
+              })()}
+              {typingUsers.length > 0 && (
+                <p className="mt-1 text-[11px] italic text-slate-500">{typingUsers.slice(0, 2).join(', ')} typing...</p>
+              )}
               <form onSubmit={sendChat} className="mt-2 flex gap-2">
-                <input value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Chat… or @cosmo explain entropy in 2 lines" className="w-full rounded-lg border px-3 py-2 text-xs dark:bg-[#0B0F19]" />
+                <input value={chatInput} onChange={(e) => { setChatInput(e.target.value); emitTyping(); }} placeholder="Chat\xe2\x80\xa6 or @cosmo explain entropy in 2 lines" className="w-full rounded-lg border px-3 py-2 text-xs dark:bg-[#0B0F19]" />
+                <button type="button" onClick={() => (recording ? stopVoiceNote() : void startVoiceNote())} title={recording ? `Stop (${recordSecs}s / 60s max)` : 'Record voice note (private room only)'} aria-label="Record voice note" className={`rounded-lg px-3 py-2 text-xs font-semibold text-white ${recording ? 'bg-red-600 animate-pulse' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                  {recording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                </button>
                 <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white">Send</button>
               </form>
+              {recording && <p className="mt-1 text-[11px] font-semibold text-red-600">Recording voice note... {recordSecs}s (auto-stops at 60s)</p>}
             </div>
           </>
         )}
