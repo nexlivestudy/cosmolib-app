@@ -277,7 +277,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
 
     setMessageInput('');
 
-    // Respect RLS: insert with own auth.uid() (profile.id) only
+    // Respect RLS: insert with own auth.uid() (profile.id) only (reply links sync via broadcast)
     const row: GroupMessage = {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       group_id: currentGroup.id,
@@ -286,9 +286,24 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
       author_streak: profile.streakDays,
       content: cleanContent,
       created_at: new Date().toISOString(),
+      replyToId: replyToId || undefined,
     };
 
     setMessages((prev) => [...prev, row]);
+    if (replyToId) {
+      const linkId: string = replyToId;
+      setReplyLinks((prev) => ({ ...prev, [row.id]: linkId }));
+      try {
+        (channelRef.current as unknown as { send: (m: object) => void } | null)?.send({
+          type: 'broadcast',
+          event: 'replylink',
+          payload: { msgId: row.id, replyToId: linkId },
+        });
+      } catch {
+        /* reply link best-effort */
+      }
+    }
+    setReplyToId(null);
 
     if (supabase) {
       const { error } = await supabase.from('group_messages').insert({
@@ -301,6 +316,40 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
       if (error) {
         setVaultError(`Realtime sync note: ${error.message}`);
       }
+    }
+  };
+
+  const toggleReaction = (msgId: string, emoji: string) => {
+    const prevEmoji = myReactions[msgId];
+    const nextEmoji = prevEmoji === emoji ? null : emoji;
+    setMyReactions((prev) => {
+      const next = { ...prev };
+      if (nextEmoji) next[msgId] = nextEmoji;
+      else delete next[msgId];
+      return next;
+    });
+    setReactions((prev) => {
+      const cur = { ...(prev[msgId] || {}) };
+      if (prevEmoji) cur[prevEmoji] = Math.max(0, (cur[prevEmoji] || 1) - 1);
+      if (nextEmoji) cur[nextEmoji] = (cur[nextEmoji] || 0) + 1;
+      return { ...prev, [msgId]: cur };
+    });
+    try {
+      (channelRef.current as unknown as { send: (m: object) => void } | null)?.send({
+        type: 'broadcast',
+        event: nextEmoji ? 'reaction' : 'reaction-remove',
+        payload: { msgId, emoji: (nextEmoji || prevEmoji) as string },
+      });
+    } catch {
+      /* reaction best-effort */
+    }
+  };
+
+  const formatChatTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
     }
   };
 
