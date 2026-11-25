@@ -108,4 +108,138 @@ export async function getFollowState(myId: string, otherId: string): Promise<Fol
   } catch { return 'none'; }
 }
 
-// __PART3__
+export async function sendFollowRequest(myId: string, myName: string, themId: string): Promise<boolean> {
+  if (!supabase || !myId || !themId || myId === themId) return false;
+  const safeName = myName.slice(0, 60) || 'A scholar';
+  try {
+    const { error } = await supabase.from('follows').upsert(
+      { follower_id: myId, followee_id: themId, status: 'pending' },
+      { onConflict: 'follower_id,followee_id' }
+    );
+    if (error) return false;
+    await supabase.from('notifications').insert({
+      user_id: themId,
+      type: 'follow_request',
+      title: 'New follow request',
+      body: `${safeName} wants to connect with you.`,
+      actor_id: myId,
+      actor_name: safeName,
+    });
+    return true;
+  } catch { return false; }
+}
+
+export async function respondFollowRequest(edgeId: string, accept: boolean, requesterId: string, requesterName: string, myId: string, myName: string): Promise<boolean> {
+  if (!supabase || !edgeId) return false;
+  try {
+    const { error } = await supabase.from('follows').update({ status: accept ? 'accepted' : 'declined' }).eq('id', edgeId);
+    if (error) return false;
+    if (accept) {
+      await supabase.from('notifications').insert({
+        user_id: requesterId,
+        type: 'follow_accepted',
+        title: 'Follow request accepted',
+        body: `${myName || 'A scholar'} accepted your follow request. You can now chat.`,
+        actor_id: myId,
+        actor_name: myName || 'A scholar',
+      });
+    }
+    void requesterName;
+    return true;
+  } catch { return false; }
+}
+
+export async function removeFollow(myId: string, otherId: string): Promise<boolean> {
+  if (!supabase || !myId || !otherId) return false;
+  try {
+    await supabase.from('follows').delete().eq('follower_id', myId).eq('followee_id', otherId);
+    await supabase.from('follows').delete().eq('follower_id', otherId).eq('followee_id', myId);
+    return true;
+  } catch { return false; }
+}
+
+export async function listNotifications(userId: string, limit = 30): Promise<NotificationItem[]> {
+  if (!supabase || !userId) return [];
+  try {
+    const { data } = await supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(limit);
+    return (Array.isArray(data) ? data : []) as NotificationItem[];
+  } catch { return []; }
+}
+
+export async function markNotificationsRead(userId: string): Promise<void> {
+  if (!supabase || !userId) return;
+  try {
+    await supabase.from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false);
+  } catch { /* ignore */ }
+}
+
+export async function canChatWith(myId: string, peerId: string): Promise<boolean> {
+  if (!supabase || !myId || !peerId || myId === peerId) return false;
+  try {
+    const { data } = await supabase.from('follows').select('status').or(`and(follower_id.eq.${myId},followee_id.eq.${peerId},status.eq.accepted),and(follower_id.eq.${peerId},followee_id.eq.${myId},status.eq.accepted)`).limit(1);
+    return Array.isArray(data) && data.length > 0;
+  } catch { return false; }
+}
+
+export interface ConversationPreview {
+  peerId: string;
+  peerName: string;
+  lastText: string;
+  lastAt: string;
+  unread: number;
+  connected: boolean;
+}
+
+export async function listConversations(myId: string, myName: string): Promise<ConversationPreview[]> {
+  if (!supabase || !myId) return [];
+  try {
+    const { data: edges } = await supabase.from('follows').select('follower_id,followee_id,status').or(`follower_id.eq.${myId},followee_id.eq.${myId}`).eq('status', 'accepted');
+    const peerIds = new Set<string>();
+    (Array.isArray(edges) ? edges : []).forEach((e: any) => {
+      const other = e.follower_id === myId ? e.followee_id : e.follower_id;
+      if (other && other !== myId) peerIds.add(String(other));
+    });
+    const { data: msgs } = await supabase.from('direct_messages').select('sender_id,receiver_id,content,created_at').or(`sender_id.eq.${myId},receiver_id.eq.${myId}`).order('created_at', { ascending: false }).limit(200);
+    const byPeer = new Map<string, { lastText: string; lastAt: string; unread: number }>();
+    (Array.isArray(msgs) ? msgs : []).forEach((m: any) => {
+      const other = String(m.sender_id === myId ? m.receiver_id : m.sender_id);
+      if (!other || other === myId || other === 'undefined') return;
+      peerIds.add(other);
+      const cur = byPeer.get(other);
+      if (!cur) {
+        byPeer.set(other, { lastText: String(m.content || '').slice(0, 80), lastAt: String(m.created_at || ''), unread: m.sender_id !== myId ? 1 : 0 });
+      } else if (m.sender_id !== myId) {
+        cur.unread += 1;
+      }
+    });
+    if (peerIds.size === 0) return [];
+    const { data: profiles } = await supabase.from('profiles').select('id,display_name').in('id', [...peerIds]);
+    const names = new Map<string, string>();
+    (Array.isArray(profiles) ? profiles : []).forEach((p: any) => names.set(String(p.id), String(p.display_name || 'Cosmo Scholar')));
+    void myName;
+    return [...peerIds].map((pid) => {
+      const info = byPeer.get(pid) || { lastText: 'Say hello to start chatting.', lastAt: '', unread: 0 };
+      return { peerId: pid, peerName: names.get(pid) || 'Cosmo Scholar', ...info, connected: true };
+    }).sort((a, b) => String(b.lastAt || '').localeCompare(String(a.lastAt || '')));
+  } catch { return []; }
+}
+
+export async function listDMs(myId: string, peerId: string, limit = 60): Promise<DirectMessage[]> {
+  if (!supabase || !myId || !peerId) return [];
+  try {
+    const { data } = await supabase.from('direct_messages').select('*').or(`and(sender_id.eq.${myId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${myId})`).order('created_at', { ascending: true }).limit(limit);
+    return (Array.isArray(data) ? data : []) as DirectMessage[];
+  } catch { return []; }
+}
+
+export async function sendDM(senderId: string, receiverId: string, rawText: string): Promise<DirectMessage | null> {
+  const text = (rawText || '').trim().slice(0, 1000);
+  if (!supabase || !senderId || !receiverId || !text) return null;
+  const ok = await canChatWith(senderId, receiverId);
+  if (!ok) return null;
+  try {
+    const { data, error } = await supabase.from('direct_messages').insert({ sender_id: senderId, receiver_id: receiverId, content: text }).select().single();
+    if (error || !data) return null;
+    return data as DirectMessage;
+  } catch { return null; }
+}
