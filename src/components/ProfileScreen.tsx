@@ -401,6 +401,6 @@ export const ProfileScreen: React.FC<Props> = ({
           )}
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
