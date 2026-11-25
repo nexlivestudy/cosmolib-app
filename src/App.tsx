@@ -13,9 +13,11 @@ import {
   Siren,
   Sun,
   Users,
+  Video,
   X,
 } from 'lucide-react';
 import { AuthScreen } from './components/AuthScreen';
+import { LiveStudyRoomModule } from './components/LiveStudyRoomModule';
 import { BYOKModal } from './components/BYOKModal';
 import { DashboardHome } from './components/DashboardHome';
 import { ExamPanicModule } from './components/ExamPanicModule';
@@ -323,6 +325,7 @@ export default function App() {
       { id: 'panic', label: 'Exam Panic Mode', shortDesc: 'Master Rescue PDF, 20/40 Qs & grader', icon: Siren },
       { id: 'focus', label: 'Schedule', shortDesc: 'Regain alarms, calls-only & Strict Mode', icon: Clock },
       { id: 'groups', label: 'Hybrid Group Hub', shortDesc: 'Silent live-cam rooms & study vault', icon: Users },
+      { id: 'live', label: 'Live Rooms', shortDesc: 'Personal Meet-type rooms + board + @cosmo', icon: Video },
     ],
     []
   );
@@ -776,6 +779,10 @@ export default function App() {
               isUltraBlockActive={isUltraBlockActive}
               onSelectGroup={setActiveGroupId}
             />
+          )}
+
+          {activeModule === 'live' && (
+            <LiveStudyRoomModule profile={profile} byok={byok} />
           )}
         </main>
       </div>
