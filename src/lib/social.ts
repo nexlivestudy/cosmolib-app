@@ -255,3 +255,12 @@ export async function getFollowCounts(userId: string): Promise<{ followers: numb
   } catch { return { followers: 0, following: 0 }; }
 }
 
+export async function answerFollowByUsers(myId: string, requesterId: string, accept: boolean, myName: string): Promise<boolean> {
+  if (!supabase || !myId || !requesterId) return false;
+  try {
+    const { data } = await supabase.from('follows').select('id').eq('follower_id', requesterId).eq('followee_id', myId).eq('status', 'pending').limit(1);
+    const edge = (Array.isArray(data) ? data[0] : null) as { id: string } | null;
+    if (!edge?.id) return false;
+    return respondFollowRequest(edge.id, accept, requesterId, '', myId, myName);
+  } catch { return false; }
+}
