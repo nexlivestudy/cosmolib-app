@@ -181,4 +181,94 @@ export const ProfileScreen: React.FC<Props> = ({
     if (ok) setPosts((prev) => prev.filter((p) => p.id !== id));
   };
 
-// __PART3__
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 sm:items-center sm:p-4" onClick={onClose}>
+      <div
+        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-[#111827] sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
+          <h2 className="font-display text-base font-bold text-slate-900 dark:text-white">
+            {isMine ? 'Your profile' : 'Profile'}
+          </h2>
+          <button type="button" onClick={onClose} aria-label="Close profile" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {loading && <p className="p-6 text-center text-xs text-slate-500">Loading profile...</p>}
+          {loading && pub && (
+            <>
+              <div className="flex items-start gap-4 p-5">
+                <div className="relative shrink-0">
+                  {pub.avatarUrl ? (
+                    <img src={pub.avatarUrl} alt={`${pub.name} display picture`} className="h-20 w-20 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-2xl font-bold text-white">
+                      {initials(pub.name)}
+                    </span>
+                  )}
+                  {pub.online && (
+                    <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 dark:border-[#111827]" />
+                  )}
+                  {isMine && (
+                    <label className="absolute -bottom-1 -right-1 cursor-pointer rounded-full bg-indigo-600 p-1.5 text-white shadow hover:bg-indigo-500" title="Change display picture">
+                      <Camera className="h-3.5 w-3.5" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          e.target.value = '';
+                          if (f) void handleDpPick(f);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-display text-xl font-bold text-slate-900 dark:text-white">{pub.name}</h3>
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    {[pub.branch, pub.institution].filter(Boolean).join(' - ') || 'Cosmo Scholar'}
+                  </p>
+                  <div className="mt-2 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                    <span><strong className="text-slate-900 dark:text-white">{counts.followers}</strong> followers</span>
+                    <span><strong className="text-slate-900 dark:text-white">{counts.following}</strong> following</span>
+                    <span><strong className="text-amber-600">{pub.streakDays}d</strong> streak</span>
+                  </div>
+                </div>
+              </div>
+              {uploadingDp && <p className="px-5 text-xs text-slate-500">Uploading display picture...</p>}
+              {pub.bio ? (
+                <p className="px-5 pb-1 text-sm text-slate-700 dark:text-slate-300">{pub.bio}</p>
+              ) : (
+                isMine && <p className="px-5 pb-1 text-xs italic text-slate-400">Add a bio so study partners know your goals.</p>
+              )}
+              {saveError && <p role="alert" className="px-5 pt-1 text-xs font-medium text-red-600 dark:text-red-400">{saveError}</p>}
+              <div className="flex items-center gap-2 px-5 py-3">
+                {isMine ? (
+                  <button
+                    type="button"
+                    onClick={() => setEditing((v) => !v)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> {editing ? 'Cancel editing' : 'Edit profile'}
+                  </button>
+                ) : (
+                  <>
+                    <FollowButton myId={me.id} myName={userName} peerId={pub.id} peerName={pub.name} />
+                    <button
+                      type="button"
+                      disabled={!canMessageWith(pub.id)}
+                      title={canMessageWith(pub.id) ? 'Open chat' : 'Follow and get accepted to chat'}
+                      onClick={() => canMessageWith(pub.id) && onOpenChat(pub.id, pub.name)}
+                      className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >
+                      Message
+                    </button>
+                  </>
+                )}
+              </div>
+
+// __PART4__
