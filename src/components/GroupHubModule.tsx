@@ -4,12 +4,15 @@ import {
   CameraOff,
   CheckCheck,
   Download,
+  EyeOff,
   FileText,
   Flame,
   MicOff,
+  PictureInPicture2,
   Reply,
   Send,
   Upload,
+  MessageCircle,
   Users,
   Video,
   X,
@@ -28,6 +31,13 @@ import { MembersDrawer } from './GroupMembers';
 import { NotificationsBell } from './NotificationsBell';
 import { DirectMessages } from './DirectMessages';
 import { fetchGroupMembers, heartbeat, listConversations } from '../lib/social';
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'CS';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
 
 interface GroupHubModuleProps {
   profile: UserProfile;
@@ -927,6 +937,7 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             <button type="button" onClick={() => setActiveTab('messages')} className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-500">
               <MessageCircle className="h-3.5 w-3.5" /> Open Messages
             </button>
+          </div>
           </div>
         </aside>
       </div>
