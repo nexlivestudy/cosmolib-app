@@ -12,12 +12,14 @@ import {
   Search,
   Siren,
   Sun,
+  UserRound,
   Users,
   Video,
   X,
 } from 'lucide-react';
 import { AuthScreen } from './components/AuthScreen';
 import { LiveStudyRoomModule } from './components/LiveStudyRoomModule';
+import { ProfileScreen } from './components/ProfileScreen';
 import { BYOKModal } from './components/BYOKModal';
 import { DashboardHome } from './components/DashboardHome';
 import { ExamPanicModule } from './components/ExamPanicModule';
@@ -90,7 +92,7 @@ export default function App() {
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, []);
 
-  // Load verified Supabase session ONLY â no auto-login or backdoor
+  // Load verified Supabase session ONLY Ã¢ÂÂ no auto-login or backdoor
   useEffect(() => {
     let mounted = true;
     if (!supabase) {
@@ -337,6 +339,7 @@ export default function App() {
       { id: 'focus', label: 'Schedule', shortDesc: 'Regain alarms, calls-only & Strict Mode', icon: Clock },
       { id: 'groups', label: 'Hybrid Group Hub', shortDesc: 'Silent live-cam rooms & study vault', icon: Users },
       { id: 'live', label: 'Live Rooms', shortDesc: 'Personal Meet-type rooms + board + @cosmo', icon: Video },
+      { id: 'profile', label: 'Profile', shortDesc: 'Your DP, bio, followers & study posts', icon: UserRound },
     ],
     []
   );
@@ -369,7 +372,7 @@ export default function App() {
           id: `folder-${folder.id}`,
           kind: 'Folder',
           label: folder.name,
-          sub: `${folder.subjectTag} Â· ${folder.resources.length} sources`,
+          sub: `${folder.subjectTag} ÃÂ· ${folder.resources.length} sources`,
           onSelect: () => {
             setActiveModule('folders');
             setGlobalSearch('');
@@ -385,7 +388,7 @@ export default function App() {
           id: `grp-${grp.id}`,
           kind: 'Group',
           label: grp.name,
-          sub: `${grp.branch} Â· ${grp.activeCams} cams live`,
+          sub: `${grp.branch} ÃÂ· ${grp.activeCams} cams live`,
           onSelect: () => {
             handleOpenGroup(grp.id);
             setGlobalSearch('');
@@ -492,7 +495,7 @@ export default function App() {
                 {profile.displayName}
               </div>
               <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                {profile.institution} Â· {profile.countryCode}
+                {profile.institution} ÃÂ· {profile.countryCode}
               </div>
             </div>
           </div>
@@ -565,7 +568,7 @@ export default function App() {
                     {profile.displayName}
                   </div>
                   <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                    {profile.streakDays}d streak Â· {profile.countryCode}
+                    {profile.streakDays}d streak ÃÂ· {profile.countryCode}
                   </div>
                 </div>
               </div>
@@ -723,7 +726,7 @@ export default function App() {
                       {profile.institution}
                     </div>
                     <div className="mt-1 truncate text-[11px] text-slate-500 dark:text-slate-400">
-                      {profile.branch} Â· {profile.countryCode}
+                      {profile.branch} ÃÂ· {profile.countryCode}
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 font-mono text-xs tabular-nums dark:border-slate-800">
                       <span className="text-amber-600 dark:text-amber-300">{profile.streakDays}d streak</span>
@@ -794,6 +797,18 @@ export default function App() {
 
           {activeModule === 'live' && (
             <LiveStudyRoomModule profile={profile} byok={byok} />
+          )}
+
+          {activeModule === 'profile' && (
+            <ProfileScreen
+              me={profile}
+              userId={profile.id}
+              userName={profile.displayName}
+              onlineIds={[]}
+              onOpenChat={() => {}}
+              canMessageWith={() => false}
+              onClose={() => setActiveModule('dashboard')}
+            />
           )}
         </main>
       </div>
