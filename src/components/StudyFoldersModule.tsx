@@ -507,25 +507,64 @@ export const StudyFoldersModule: React.FC<StudyFoldersModuleProps> = ({
                           className="h-full w-full border-0"
                         />
                       </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <a
+                          href={`https://www.youtube.com/watch?v=${activeYoutubeResource.youtubeId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-semibold text-indigo-600 hover:underline dark:text-cyan-400"
+                        >
+                          Open on YouTube (new tab)
+                        </a>
+                        {(!activeYoutubeResource.syncedNotes || activeYoutubeResource.syncedNotes.length === 0) && (
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            AI notes failed to generate - video still plays. Check GEMINI_API_KEY / BYOK, then re-add the video.
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="xl:col-span-5">
                       <h4 className="text-xs font-semibold text-cyan-700 dark:text-cyan-400">
                         Synced AI Lecture Notes - click a timestamp to jump
                       </h4>
                       <div className="mt-3 max-h-72 space-y-2.5 overflow-y-auto pr-1">
-                        {(activeYoutubeResource.syncedNotes || []).map((note, idx) => (
-                          <div
-                            key={idx}
-                            className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-[#0B0F19]"
-                          >
-                            <span className="font-mono text-xs font-semibold text-indigo-600 tabular-nums dark:text-cyan-400">
-                              {note.timestamp}
-                            </span>
-                            <p className="mt-1 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                              {note.note}
-                            </p>
-                          </div>
-                        ))}
+                        {(activeYoutubeResource.syncedNotes || []).map((note, idx) => {
+                          const toSecs = (ts: string) => {
+                            const parts = ts.split(':').map((p) => Number(p));
+                            if (parts.some((n) => !Number.isFinite(n))) return 0;
+                            let s = 0;
+                            for (const p of parts) s = s * 60 + p;
+                            return s;
+                          };
+                          const seek = () => {
+                            const frame = document.getElementById(`yt-player-${activeYoutubeResource.id}`) as HTMLIFrameElement | null;
+                            const secs = toSecs(note.timestamp);
+                            if (frame?.contentWindow) {
+                              frame.contentWindow.postMessage(
+                                JSON.stringify({ event: 'command', func: 'seekTo', args: [secs, true] }),
+                                '*'
+                              );
+                            }
+                          };
+                          return (
+                            <div
+                              key={idx}
+                              className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-[#0B0F19]"
+                            >
+                              <button
+                                type="button"
+                                onClick={seek}
+                                title="Jump video to this checkpoint"
+                                className="font-mono text-xs font-semibold text-indigo-600 tabular-nums hover:underline dark:text-cyan-400"
+                              >
+                                Play {note.timestamp}
+                              </button>
+                              <p className="mt-1 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                                {note.note}
+                              </p>
+                            </div>
+                          );
+                        })}
                         {(!activeYoutubeResource.syncedNotes || activeYoutubeResource.syncedNotes.length === 0) && (
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             No synced notes yet. The lecture video above is fully watchable - AI checkpoints appear here once generation succeeds (fixed Gemini 2.5 Flash backend).
