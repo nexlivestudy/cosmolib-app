@@ -204,7 +204,15 @@ export const ProfileScreen: React.FC<Props> = ({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <ProfileBody />
+      </div>
+    </div>
+  );
+
+  function ProfileBody() {
+    return (
+      <div className={asPage ? 'overflow-hidden rounded-2xl bg-white shadow dark:bg-[#111827]' : undefined}>
+        <div className={asPage ? undefined : 'min-h-0 flex-1 overflow-y-auto'}>
           {loading && <p className="p-6 text-center text-xs text-slate-500">Loading profile...</p>}
           {loading && pub && (
             <>
