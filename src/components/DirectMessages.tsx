@@ -77,6 +77,19 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
   const [theme, setTheme] = useState<ChatThemeId>(() => loadTheme(myId, peer.id));
   const [showThemes, setShowThemes] = useState(false);
   const convoId = `${myId}_${peer.id}`;
+  const [liveFeed, setLiveFeed] = useState(true);
+  const pullLatest = async () => {
+    try {
+      const latest = await listDMs(myId, peer.id);
+      if (latest.length === 0) return;
+      setMsgs((prev) => {
+        if (prev.length === 0) return latest;
+        const known = new Set(prev.map((x) => x.id));
+        const fresh = latest.filter((m) => !known.has(m.id));
+        return fresh.length ? [...prev, ...fresh] : prev;
+      });
+    } catch { /* polling is best-effort */ }
+  };
   useEffect(() => {
     let live = true;
     listDMs(myId, peer.id).then((m) => { if (live) setMsgs(m); }).catch(() => {});
@@ -84,13 +97,21 @@ const DMThread: React.FC<{ myId: string; myName: string; peer: RoomMember; onBac
   }, [myId, peer.id]);
   useEffect(() => {
     if (!supabase || !myId) return;
+    let subActive = true;
     const ch = supabase.channel(`dm-thread-${convoId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, (payload) => {
+      if (!subActive) return;
       const m = payload.new as DirectMessage;
       if ((m.sender_id === myId && m.receiver_id === peer.id) || (m.sender_id === peer.id && m.receiver_id === myId)) {
         setMsgs((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
       }
-    }).subscribe();
-    return () => { void supabase.removeChannel(ch); };
+    }).subscribe((status) => {
+      if (subActive) setLiveFeed(status === 'SUBSCRIBED');
+    });
+    const poll = window.setInterval(() => {
+      if (!document.hidden) void pullLatest();
+    }, 5000);
+    return () => { subActive = false; window.clearInterval(poll); void supabase.removeChannel(ch); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myId, peer.id, convoId]);
   const send = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
