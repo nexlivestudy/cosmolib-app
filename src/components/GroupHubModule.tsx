@@ -630,6 +630,8 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
             </div>
           </div>
 
+          {activeTab === 'chat' && (
+          <>
           <div className="flex-1 space-y-3 overflow-y-auto p-5">
             {messages.map((msg) => {
               const mine = msg.user_id === profile.id;
