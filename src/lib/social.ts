@@ -602,3 +602,68 @@ export async function listDMsSince(myId: string, peerId: string, sinceIso: strin
     return [];
   }
 }
+
+/* Group-chat offline layer (same free pattern as DMs: outbox + cache + delta). */
+export interface QueuedGroupMessage {
+  clientId: string;
+  senderId: string;
+  groupId: string;
+  authorName: string;
+  authorStreak: number;
+  content: string;
+  replyToId?: string;
+  createdAt: string;
+  attempts: number;
+}
+
+function groupOutboxKey(ownerId: string): string {
+  return `cosmolib_group_outbox_${ownerId}`;
+}
+
+function groupCacheKey(groupId: string): string {
+  return `cosmolib_group_msgs_${groupId}`;
+}
+
+function groupFilesCacheKey(groupId: string): string {
+  return `cosmolib_group_files_${groupId}`;
+}
+
+function dropQueuedGroup(ownerId: string, clientId: string): void {
+  saveGroupOutbox(ownerId, loadGroupOutbox(ownerId).filter((q) => q.clientId !== clientId));
+}
+
+export function loadGroupOutbox(ownerId: string): QueuedGroupMessage[] {
+  const list = readJson<QueuedGroupMessage[]>(groupOutboxKey(ownerId), []);
+  return Array.isArray(list) ? list : [];
+}
+
+function saveGroupOutbox(ownerId: string, list: QueuedGroupMessage[]): void {
+  writeJson(groupOutboxKey(ownerId), list.slice(-50));
+}
+
+export function queueGroupMessage(
+  senderId: string,
+  groupId: string,
+  authorName: string,
+  authorStreak: number,
+  rawText: string,
+  replyToId?: string
+): QueuedGroupMessage | null {
+  const text = (rawText || '').trim().slice(0, 1000);
+  if (!senderId || !groupId || !text) return null;
+  const entry: QueuedGroupMessage = {
+    clientId: `g-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    senderId,
+    groupId,
+    authorName: authorName.slice(0, 60),
+    authorStreak,
+    content: text,
+    replyToId,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  };
+  const list = loadGroupOutbox(senderId);
+  list.push(entry);
+  saveGroupOutbox(senderId, list);
+  return entry;
+}
