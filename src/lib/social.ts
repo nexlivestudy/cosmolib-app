@@ -243,3 +243,15 @@ export async function sendDM(senderId: string, receiverId: string, rawText: stri
     return data as DirectMessage;
   } catch { return null; }
 }
+
+export async function getFollowCounts(userId: string): Promise<{ followers: number; following: number }> {
+  if (!supabase || !userId) return { followers: 0, following: 0 };
+  try {
+    const [a, b] = await Promise.all([
+      supabase.from('follows').select('id', { count: 'exact', head: true }).eq('followee_id', userId).eq('status', 'accepted'),
+      supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId).eq('status', 'accepted'),
+    ]);
+    return { followers: a.count || 0, following: b.count || 0 };
+  } catch { return { followers: 0, following: 0 }; }
+}
+
