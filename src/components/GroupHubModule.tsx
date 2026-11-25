@@ -87,9 +87,13 @@ export const GroupHubModule: React.FC<GroupHubModuleProps> = ({
   const localStreamRef = useRef<MediaStream | null>(null);
   const peerRef = useRef<{ destroy: () => void; id?: string } | null>(null);
 
-  // 1-to-1 Study Buddy Follow + 3-hour Cooldown
-  const [buddies, setBuddies] = useState<BuddyProfile[]>(INITIAL_STUDY_BUDDIES);
-  const [buddyNotice, setBuddyNotice] = useState<string | null>(null);
+  // Social hub state: members drawer, DMs, presence-driven online list
+  const [activeTab, setActiveTab] = useState<'chat' | 'files' | 'messages'>('chat');
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [members, setMembers] = useState<RoomMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [dmPeer, setDmPeer] = useState<RoomMember | null>(null);
+  const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
 
   // Subscribe to Supabase Realtime for group_messages, group_resources, and presence
   useEffect(() => {
